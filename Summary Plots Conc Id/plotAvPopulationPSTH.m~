@@ -1,0 +1,13 @@
+%plot average population PSTH 
+
+firingRatesAverage = nanmean(smoothPSTH,5);
+firstbin = -10;
+lastbin = 10;
+
+figure()
+for whatsmell = 1:5 
+    for whatconc = 1:4
+    subplot(5,4,1)
+    PopAverage = squeeze(mean(firingRatesAverage(:,whatsmell,whatconc,:),1));
+    end
+end
