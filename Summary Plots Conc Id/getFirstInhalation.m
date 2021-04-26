@@ -4,8 +4,10 @@ function [closest_neighbor_zci] = getFirstInhalation(myKsDir, OdorTimestamps)
 % experiment = '2021-01-25_09-35-25';
 % myKsDir = fullfile(dir, experiment);
 
-foo = fullfile(myKsDir, '100_ADC1.continuous');
-[Respiration, timestamps, ~] = load_open_ephys_data(foo); % data has channel IDs
+%foo = fullfile(myKsDir, '100_ADC1.continuous');
+foo = dir(fullfile(myKsDir,'*_ADC1.continuous'));
+filename = fullfile(myKsDir,foo.name);
+[Respiration, timestamps, ~] = load_open_ephys_data(filename); % data has channel IDs
 
 % adjust timestamps to account for the start offset in OEPS
 offset = timestamps(1);
