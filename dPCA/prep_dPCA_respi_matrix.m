@@ -1,8 +1,12 @@
-%dPCA_matrix
+%prep_dPCA_respi_matrix
 
 %written by MD
 
-% create structure array for all neurons all sessions all mice
+%for AON sessions
+% create 2 structure arrays for all neurons all sessions all mice
+% 1 structure with spikes aligned to odor onset 
+% 1 structure with spikes aligned to 1 inhalation after odor onset 
+
 
 
 %% add the relevant repositories to path

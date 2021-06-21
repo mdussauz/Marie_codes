@@ -1,9 +1,10 @@
-function [smoothPSTH] = SmoothPSTH(PSTH, timewindow)
+function [smoothPSTH] = SmoothPSTH(PSTH, timewindow, ExpType)
 
 % written by MD
 % function to smooth PSTH
 % PSTH4D or 5D for 16 odors or conc exp
-%
+% timewindow = time in ms over which to smooth 
+% ExpType = "Conc" if concentration exp or "Id" if 16 odors exp
 
 Nneurons= size(PSTH,1);
 t_wid = timewindow;  % width of kernel (in ms)
@@ -12,11 +13,14 @@ gauss_kernel = normpdf(taxis, 0, t_wid);
 gauss_kernel = gauss_kernel ./ sum(gauss_kernel);
 clusterNum = 1:Nneurons;
 
-if ndims(PSTH) == 5 % conc exp
+if ndims(PSTH) == 5 && ExpType == "Conc" % conc exp
     NTrials = 100;
     NOdors = 20;
 	%timepoints = 20000; 
-elseif ndims(PSTH) == 4 % 16 odors exp
+elseif ndims(PSTH) == 4 && ExpType == "Conc" % conc exp and 4d PSTH matrix
+    NTrials = 100;
+    NOdors = 20;
+elseif ndims(PSTH) == 4 && ExpType == "Id"  % 16 odors exp
     NTrials = 80;
     NOdors = 16;
     %timepoints = 20000;%in previous version of this exp it was shorter    

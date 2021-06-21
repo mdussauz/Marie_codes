@@ -11,7 +11,7 @@ Nneurons = size(PSTH5D,1);
 NtrialNum = zeros(Nneurons, NId, NConc); %initialize 
 NtrialNum(:,:,:) = 5;
 trialNum = NtrialNum;
-firingRates =  PSTH5D;
+firingRates =  smoothPSTH5D;
 firingRatesAverage = nanmean(firingRates,5);
 
 N =  size(PSTH5D,1); % 97   % number of neurons

@@ -274,10 +274,10 @@ dpc = W(:,1:ncomp)'*X;
 x = reshape(dpc,ncomp, 5, 4, T);
 
 %which_comps = [4 15 18]; % for APC identity start trial/odor end odor
-%which_comps = [3 9]; % for APC conc
+which_comps = [2 8 17]; % for APC conc
 %which_comps = [6 8 12]; % for APC identity
-%which_comps = [4 5 9]; % for AON identity
-which_comps = [2 8 15]; % for AON concentration
+%which_comps = [3 7 9]; % for AON identity
+%which_comps = [2 11 19]; % for AON concentration
 %which_comps = [3 11 20]; % Change these numbers to the top 3 components you need to plot;
 % this will depend on whether you are plotting identity or concentration
 % subspaces
@@ -311,7 +311,7 @@ for odor = [1 2 3 4 5]
                     set(h1,'Color',color(odor,:), 'LineStyle', '-','LineWidth',a(dil))
                 elseif size(which_comps,2)==2
                    h1 = plot3(squeeze(temp2(1,:)),squeeze(temp2(2,:)));
-         %            h1 = plot(squeeze(temp2(1,:)),squeeze(temp2(2,:))); %
+  %                   h1 = plot(squeeze(temp2(1,:)),squeeze(temp2(2,:))); %
  %                   if only 2 PC to plot
                     set(h1,'Color',color(odor,:), 'LineStyle', '-','LineWidth',a(dil))
                 end 

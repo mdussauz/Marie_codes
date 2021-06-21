@@ -1,7 +1,9 @@
-function [PSTH] = ComputePSTHMultiD(allclusters, ExpType)
+function [PSTH] = ComputePSTHMultiD(allclusters, ExpType,Dim)
 %written by MD
 % allclusters = structure array produced by dPCA prep code
 % ExpType = "Conc" if concentration exp or "Id" if 16 odors exp
+% Dim = 4 for PSTH4d or 5 for PSTH5d
+
 goodcluster = allclusters;
 firstbin = -10;
 lastbin = 10;
@@ -20,9 +22,9 @@ elseif ExpType == "Id"
 end
     
 %%
-switch ExpType
+switch Dim
 %%    
-    case "Conc" % Compute 5-D PSTH matrix as Neurons X Nber of Odors X Concentration X time (in ms) X Repeats 
+    case 5 % Compute 5-D PSTH matrix as Neurons X Nber of Odors X Concentration X time (in ms) X Repeats 
 
     NId = 5; % nber of odor id 
     NConc = 4; % nber of od conc
@@ -80,7 +82,7 @@ switch ExpType
     end
     PSTH = PSTH5D;
 %%
-    case "Id" % Compute 4-D PSTH as Neurons X Nber of Odors X time (in ms) X Repeats 
+    case 4 % Compute 4-D PSTH as Neurons X Nber of Odors X time (in ms) X Repeats 
 
     NRep = 5; % nber of repeats 
     PSTH4D = zeros(Nneurons, NOdors ,timepoints, NRep); %initialize 
