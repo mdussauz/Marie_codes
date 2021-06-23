@@ -7,11 +7,11 @@ function [smoothPSTH] = SmoothPSTH(PSTH, timewindow, ExpType)
 % ExpType = "Conc" if concentration exp or "Id" if 16 odors exp
 
 Nneurons= size(PSTH,1);
+clusterNum = 1:Nneurons;
 t_wid = timewindow;  % width of kernel (in ms)
 taxis = -(t_wid*5):(t_wid*5);  % make a time axis of 1000 ms for a window of 100 ms
 gauss_kernel = normpdf(taxis, 0, t_wid);
 gauss_kernel = gauss_kernel ./ sum(gauss_kernel);
-clusterNum = 1:Nneurons;
 
 if ndims(PSTH) == 5 && ExpType == "Conc" % conc exp
     NTrials = 100;
