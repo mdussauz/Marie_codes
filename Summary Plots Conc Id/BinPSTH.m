@@ -23,6 +23,7 @@ t_wid = timewindow; %%specified by user in ms
 %t_bin = t_wid./1000; % convert to sec
 %edges = firstbin:t_bin:lastbin;
 edges = 0:t_wid:20000;
+x = 1:20000;
 [~,~,idx] = histcounts(x, edges);
 
 if ndims(PSTH) == 5 && ExpType == "Conc" % conc exp
@@ -74,7 +75,7 @@ switch ndims(PSTH)
                 for j = 1:5 % for j = 1:numel(reps) %repeat number % have to bypass that when >5
                     tempPSTH = squeeze(PSTH(clusterIdx,x,:,j)); % for one cluster, all times for one type
                     FR_mean_in_bin = accumarray(idx(:),tempPSTH(:),[],@mean);
-                    binnedPSTH(clusterIdx,x,y,:,j) = FR_mean_in_bin;
+                    binnedPSTH(clusterIdx,x,:,j) = FR_mean_in_bin;
                 end
             end
         end
