@@ -6,7 +6,7 @@
 % 1 structure with spikes aligned to odor onset
 % 1 structure with spikes aligned to 1 inhalation after odor onset
 
-%% USERS: what brain area
+%% USER: what brain area
 
 brain_area = 'APC'; % input is 'AON' or 'APC'
 

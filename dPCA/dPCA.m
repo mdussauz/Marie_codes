@@ -266,6 +266,7 @@ dpca_plot(firingRatesAverage, W, V, @dpca_plot_default, ...
 
 
 T = 20000;
+%T = 4000; % when considering only odor timewindow
 ncomp = 20;
 ToSmooth = 0;
 sp = 25;
@@ -275,9 +276,9 @@ x = reshape(dpc,ncomp, 5, 4, T);
 
 %which_comps = [4 15 18]; % for APC identity start trial/odor end odor
 %which_comps = [3 9]; % for APC conc
-%which_comps = [6 8 12]; % for APC identity
+which_comps = [6 10 12]; % for APC identity
 %which_comps = [4 5 9]; % for AON identity
-which_comps = [2 8 15]; % for AON concentration
+%which_comps = [2 8 15]; % for AON concentration
 %which_comps = [3 11 20]; % Change these numbers to the top 3 components you need to plot;
 % this will depend on whether you are plotting identity or concentration
 % subspaces
@@ -298,6 +299,7 @@ for odor = [1 2 3 4 5]
         hold on;
         for dil = 1:4
             temp2 = squeeze(x(which_comps,odor,dil,test));
+            %temp2 = squeeze(x(which_comps,odor,dil,:));
             if (ToSmooth == 1)
                 h1 = plot3(smooth(squeeze(temp2(1,:)),sp),smooth(squeeze(temp2(2,:)),sp),smooth(squeeze(temp2(3,:)),sp));
  %                set(h1,'Color',color(odor),'LineWidth',2*lw(dil),'Marker','.','MarkerSize',10*dil-5);
@@ -310,8 +312,8 @@ for odor = [1 2 3 4 5]
 %                 set(h1,'Color',color(odor,:)./a(dil),'LineWidth',2);
                     set(h1,'Color',color(odor,:), 'LineStyle', '-','LineWidth',a(dil))
                 elseif size(which_comps,2)==2
-                   h1 = plot3(squeeze(temp2(1,:)),squeeze(temp2(2,:)));
-         %            h1 = plot(squeeze(temp2(1,:)),squeeze(temp2(2,:))); %
+                   %h1 = plot3(squeeze(temp2(1,:)),squeeze(temp2(2,:)));
+                   h1 = plot(squeeze(temp2(1,:)),squeeze(temp2(2,:))); %
  %                   if only 2 PC to plot
                     set(h1,'Color',color(odor,:), 'LineStyle', '-','LineWidth',a(dil))
                 end 

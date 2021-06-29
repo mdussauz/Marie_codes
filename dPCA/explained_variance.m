@@ -5,7 +5,7 @@ NOdors = 20; %  for id/conc exp
 NId = 5; % nber of odor id 
 NConc = 4; % nber of od conc
 NRep = 5; % nber of repeats 
-Nneurons = size(PSTH5D,1);
+Nneurons = size(smoothPSTH5D,1);
 
 % 3 arrays needed to run code
 NtrialNum = zeros(Nneurons, NId, NConc); %initialize 

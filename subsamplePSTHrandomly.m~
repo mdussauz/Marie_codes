@@ -1,0 +1,12 @@
+function [subsampledPSTH] = subsamplePSTHrandomly(PSTH,size) 
+
+%subsample neurons to be included in PSTH
+%size = number of neurons to include in new PSTH
+
+Nneurons= size(PSTH,1);
+whichneurons = datasample([1:Nneurons],size,'Replace',false);
+if ndims(PSTH == 4
+subsampledPSTH = PSTH(
+elseif ndims(
+
+end
