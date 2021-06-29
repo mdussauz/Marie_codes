@@ -11,14 +11,15 @@ sp = 25;
 dpc = W(:,1:ncomp)'*X;
 x = reshape(dpc,ncomp, 5, 4, T);
 
+% Change these numbers to the top 3 components you need to plot:
+% this will depend on whether you are plotting identity or concentration
+% subspaces
 %which_comps = [4 15 18]; % for APC identity start trial/odor end odor
 which_comps = [3 8 17]; % for APC conc
 %which_comps = [6 10 12]; % for APC identity
 %which_comps = [4 5 9]; % for AON identity
 %which_comps = [2 8 15]; % for AON concentration
-%which_comps = [3 11 20]; % Change these numbers to the top 3 components you need to plot;
-% this will depend on whether you are plotting identity or concentration
-% subspaces
+
 
 color = [165,0,38;253,174,97;116,173,209;69,117,180;49,54,149]/255;
 lw = ([0.5 1 2 4]);
