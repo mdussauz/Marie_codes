@@ -1,19 +1,15 @@
-%bin PSTH
-
-%
-% edges = (0:5:50);
-% [~,~,loc]=histcounts(x,edges);
-% meany = accumarray(loc(:),y(:))./accumarray(loc(:),1);
-% xmid = 0.5*(edges(1:end-1)+edges(2:end));
-
 
 function [binnedPSTH] = BinPSTH(PSTH, timewindow, ExpType)
 
 % written by MD
 % function to bin PSTH
+% Inputs:
 % PSTH4D or 5D for 16 odors or conc exp
 % timewindow = time in ms over which to bin
 % ExpType = "Conc" if concentration exp or "Id" if 16 odors exp
+% Smoothened PSTH with the following dimensions:
+% Neurons x Odors X Concentration x timebin x Repeats if input was PSTH 5D
+% Neurons x Stimuli x timebin x Repeats if input was PSTH 4D
 
 Nneurons= size(PSTH,1);
 clusterNum = 1:Nneurons;

@@ -1,8 +1,15 @@
 function [PSTH] = ComputePSTHMultiD(allclusters, ExpType,Dim)
 %written by MD
+% inputs:
 % allclusters = structure array produced by dPCA prep code
 % ExpType = "Conc" if concentration exp or "Id" if 16 odors exp
 % Dim = 4 for PSTH4d or 5 for PSTH5d
+% Outputs:
+% PSTH with the following dimensions:
+% Neurons x Odors X Concentration x time x Repeats - for concentration series exp only and if we want to separate
+% identity and concentration in different dimensions 
+% Neurons x Stimuli x time x Repeats -  for both conc series and 16 odors
+% exp 
 
 goodcluster = allclusters;
 firstbin = -10;
