@@ -44,13 +44,13 @@ switch ndims(PSTH)
             for x = 1:NId %for each odor identity
                 for y = 1:NConc % for each concentration
                     for j = 1:NRep % for j = 1:numel(reps) %repeat number % have to bypass that when >5
-                        t = 9000; %starts at 9s = 1s before odor period
+                        t = 200;
                         time_ind = 1; % time index
-                        while t < 15000 % time % ends at 15s = 1s after odor period
+                        while t < 20000 % time
                             tempPSTH = squeeze(PSTH(clusterIdx,x,y,:,j)); % for one cluster, all times for one type
-                            airmean = squeeze(nanmean(tempPSTH(6000:10000)));
-                            normalized_PSTH = (tempPSTH - airmean); % / airmean;
-                            FR_mean_in_bin = mean(normalized_PSTH(1:t));
+                            airmean = squeeze(nanmean(tempPSTH(:,:6000:10000));
+                            normalized_mean = (odormean - airmean) / airmean;
+                            FR_mean_in_bin = mean(tempPSTH(1:t));
                             cumulativePSTH(time_ind,clusterIdx,x,y,j) = FR_mean_in_bin;
                             t = t+200;
                             time_ind = time_ind+1;
@@ -70,14 +70,11 @@ switch ndims(PSTH)
             clusterIdx = clusterNum(c);
             for x = 1:NOdors %for each odor identity
                 for j = 1:NRep % for j = 1:numel(reps) %repeat number % have to bypass that when >5
+                    %t = 200;
                     time_ind = 1;
-                    t_min = 9000; %starts at 9s = 1s before odor period
-                    t_max = 15000;% ends at 15s = 1s after odor period
-                    for t = (t_min+200):200:t_max %time
+                    for t = 200:200:20000 %time
                         tempPSTH = squeeze(PSTH(clusterIdx,x,:,j)); % for one cluster, all times for one type
-                        airmean = squeeze(nanmean(tempPSTH(6000:10000)));
-                        normalized_PSTH = (tempPSTH - airmean); % / airmean;
-                        FR_mean_in_bin = mean(normalized_PSTH(t_min:t));
+                        FR_mean_in_bin = mean(tempPSTH(1:t));
                         cumulativePSTH(time_ind,clusterIdx,x,j) = FR_mean_in_bin;
                         t = t+200;
                         time_ind = time_ind+1;

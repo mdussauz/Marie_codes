@@ -25,8 +25,8 @@ for t = t_min:t_max %time %each bin is 200 ms
     RESPCUBE_Pre = squeeze(smoothPSTH5D(t,:,:,1:5)); %pick a specific time
     %RESPCUBE_Pre = squeeze(smoothPSTH5D(:,:,t,1:5)); %pick a specific time
     x = reshape(RESPCUBE_Pre,[ncells 5 4 5]); %nber of cells id conc rep
-    x = zscore(x(:,:),0,2); %zscore in dim 2 so here for each identity 
-    x = reshape(x,[ncells 5 4 5]); %nber of cells id conc rep
+%     x = zscore(x(:,:),0,2); %zscore in dim 2 so here for each identity 
+%     x = reshape(x,[ncells 5 4 5]); %nber of cells id conc rep
     
     for test = 1:5 % rep
         trainset = setdiff(1:5,test); %here pick one of the rep as training set
@@ -100,9 +100,10 @@ colormap('jet')
 
 % %load('MC_SVC_Poly_noRetraining')
 % MCperf_pre = squeeze(nanmean(GENERAL_PERF_Pre,3));
+% % MCperf_mus = squeeze(nanmean(GENERAL_PERF_Mus,3));
 % 
 % xx = squeeze(mean(GENERAL_PERF_Pre,4));
-
+% % yy = squeeze(mean(GENERAL_PERF_Mus,4));
 % figure;
 % figCount = 1;
 % for j = 1:5
@@ -160,7 +161,7 @@ shadedErrorBar(1:t_max,mean(temp1,2),std(temp1,0,2)./sqrt(10),'LineProps','-r')
 set(gca,'TickDir','out')
 
 figure;hold on;
-TimePoint = 15; %15 for AON
+TimePoint = 15;
 %TimePoint = 8;
 temp1 = squeeze(TCperf_pre(TimePoint,:,:,4));
 % temp3 = squeeze(MCperf_pre(TimePoint,:,:,4));
