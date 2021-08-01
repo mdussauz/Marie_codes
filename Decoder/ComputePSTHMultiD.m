@@ -98,7 +98,7 @@ switch Dim
     for whichcluster = 1:length(goodcluster)
         stim = goodcluster(whichcluster).stimulus;
         clear spikecount
-        for i = 1:NOdors %for each odor % 20 for id/conc exp
+        for i = 1:NOdors %for each odor % 20 for id/conc exp or 16 for 16 od exp
             clear spikecount 
             reps = find(stim==i); % get indices of all repeats for each odor  
                               % ~trial number of each rep for one

@@ -170,36 +170,36 @@ shadedErrorBar(1:size(temp1,1),mean(temp1,2),std(temp1,0,2)./sqrt(10),'LineProps
 set(gca,'TickDir','out')
 
 %%
-CellIdx = 39; % corresponds to 200 cells
-modIndex = [];
-for odor = 1:5
-    for t = t_min:t_max
-        temp1 = squeeze(TCperf_pre(t,CellIdx,:,odor));
-        temp3 = squeeze(MCperf_pre(t,CellIdx,:,odor));      
-        modIndex(odor,t) = (nanmean(temp1)-nanmean(temp3))./(nanmean(temp1)+nanmean(temp3));
-
-    end
-end
-figure;hold on;
-modIndexExample = squeeze(modIndex(4,:));
-plot(1:20,modIndexExample(:,1),'-k')
-plot(1:20,modIndexExample(:,2),'--r')
-plot(1:20,modIndexExample(:,3),'--b')
-set(gca,'TickDir','out')
-
-figure;hold on;
-temp1 = modIndex(:,:);
-cdfplot(temp1(:));
-set(gca,'TickDir','out')
-%
-figure;hold on;range = 0:1:10;
-temp1 = modIndex(:,:);
-h1 = hist(temp1(:),range);
-plot(range,h1./sum(h1),'-k');
-set(gca,'TickDir','out')
-
-[h,p] = kstest(temp1(:))
-
-figure;hold on;
-shadedErrorBar(1:t_max,mean(temp1,1),std(temp1,0,1)./sqrt(5),'LineProps','-k')
-set(gca,'TickDir','out')
+% CellIdx = 39; % corresponds to 200 cells
+% modIndex = [];
+% for odor = 1:5
+%     for t = t_min:t_max
+%         temp1 = squeeze(TCperf_pre(t,CellIdx,:,odor));
+%         temp3 = squeeze(MCperf_pre(t,CellIdx,:,odor));      
+%         modIndex(odor,t) = (nanmean(temp1)-nanmean(temp3))./(nanmean(temp1)+nanmean(temp3));
+% 
+%     end
+% end
+% figure;hold on;
+% modIndexExample = squeeze(modIndex(4,:));
+% plot(1:20,modIndexExample(:,1),'-k')
+% plot(1:20,modIndexExample(:,2),'--r')
+% plot(1:20,modIndexExample(:,3),'--b')
+% set(gca,'TickDir','out')
+% 
+% figure;hold on;
+% temp1 = modIndex(:,:);
+% cdfplot(temp1(:));
+% set(gca,'TickDir','out')
+% %
+% figure;hold on;range = 0:1:10;
+% temp1 = modIndex(:,:);
+% h1 = hist(temp1(:),range);
+% plot(range,h1./sum(h1),'-k');
+% set(gca,'TickDir','out')
+% 
+% [h,p] = kstest(temp1(:))
+% 
+% figure;hold on;
+% shadedErrorBar(1:t_max,mean(temp1,1),std(temp1,0,1)./sqrt(5),'LineProps','-k')
+% set(gca,'TickDir','out')
