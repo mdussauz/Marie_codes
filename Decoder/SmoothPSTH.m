@@ -9,7 +9,7 @@ function [smoothPSTH] = SmoothPSTH(PSTH, timewindow, ExpType)
 % Output:
 % Smoothened PSTH with the following dimensions:
 % Neurons x Odors X Concentration x time x Repeats if input was PSTH 5D
-% Neurons x Stimuli x time x Repeats if inpuit
+% Neurons x Stimuli x time x Repeats if input was PSTH 4D
 
 Nneurons= size(PSTH,1);
 clusterNum = 1:Nneurons;
@@ -54,7 +54,7 @@ switch ndims(PSTH)
         end 
     end
 %%
-    case 4 % Compute 4-D PSTH as Neurons X Nber of Odors X time (in ms) X Repeats 
+    case 4 % Compute 4-D PSTH as Neurons X Nber of Stimuli X time (in ms) X Repeats 
 
     NRep = 5; % nber of repeats 
     
