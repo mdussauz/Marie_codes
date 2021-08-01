@@ -12,7 +12,7 @@ function [cumulativePSTH] = CumulativePSTH(PSTH, ExpType)
 % Timebin x Neurons x Stimuli X Repeats  if input was PSTH 5D
 
 
-Nneurons= size(PSTH,1);
+Nneurons= size(PSTH,2);
 clusterNum = 1:Nneurons;
 
 if ndims(PSTH) == 5 && ExpType == "Conc" % conc exp
@@ -48,7 +48,7 @@ switch ndims(PSTH)
                         t_min = 9000; %starts at 9s = 1s before odor period
                         t_max = 15000;% ends at 15s = 1s after odor period
                         for t = (t_min+200):200:t_max %time
-                            tempPSTH = squeeze(PSTH(clusterIdx,x,y,:,j)); % for one cluster, all times for one type
+                            tempPSTH = squeeze(PSTH(:,clusterIdx,x,y,j));% for one cluster, all times for one type
                             FR_mean_in_bin = mean(tempPSTH(t_min:t));
                             cumulativePSTH(time_ind,clusterIdx,x,y,j) = FR_mean_in_bin;
                             t = t+200;
@@ -73,7 +73,7 @@ switch ndims(PSTH)
                     t_min = 9000; %starts at 9s = 1s before odor period
                     t_max = 15000;% ends at 15s = 1s after odor period
                     for t = (t_min+200):200:t_max %time
-                        tempPSTH = squeeze(PSTH(clusterIdx,x,:,j)); % for one cluster, all times for one type
+                        tempPSTH = squeeze(PSTH(:,clusterIdx,x,j));  % for one cluster, all times for one type
                         FR_mean_in_bin = mean(tempPSTH(t_min:t));
                         cumulativePSTH(time_ind,clusterIdx,x,j) = FR_mean_in_bin;
                         t = t+200;

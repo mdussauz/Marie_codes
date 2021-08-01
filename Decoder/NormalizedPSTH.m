@@ -65,7 +65,7 @@ switch ndims(PSTH)
             clusterIdx = clusterNum(c);
             for x = 1:NOdors %for each odor identity
                 for j = 1:NRep % for j = 1:numel(reps) %repeat number % have to bypass that when >5
-                        tempPSTH = squeeze(PSTH(clusterIdx,x,:,j)); % for one cluster, all times for one type
+                        tempPSTH = squeeze(PSTH(clusterIdx,x,:,j));% for one cluster, all times for one type
                         airmean = squeeze(nanmean(tempPSTH(9000:10000))); %1s before odor start
                         temp_normalized_PSTH = (tempPSTH - airmean); 
                         clear airmean;
