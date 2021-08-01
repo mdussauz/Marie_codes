@@ -48,7 +48,7 @@ switch ndims(PSTH)
                         time_ind = 1; % time index
                         while t < 15000 % time % ends at 15s = 1s after odor period
                             tempPSTH = squeeze(PSTH(clusterIdx,x,y,:,j)); % for one cluster, all times for one type
-                            airmean = squeeze(nanmean(tempPSTH(6000:10000)));
+                            airmean = squeeze(nanmean(tempPSTH(9000:10000)));
                             normalized_PSTH = (tempPSTH - airmean); % / airmean;
                             FR_mean_in_bin = mean(normalized_PSTH(1:t));
                             cumulativePSTH(time_ind,clusterIdx,x,y,j) = FR_mean_in_bin;
@@ -75,7 +75,7 @@ switch ndims(PSTH)
                     t_max = 15000;% ends at 15s = 1s after odor period
                     for t = (t_min+200):200:t_max %time
                         tempPSTH = squeeze(PSTH(clusterIdx,x,:,j)); % for one cluster, all times for one type
-                        airmean = squeeze(nanmean(tempPSTH(6000:10000)));
+                        airmean = squeeze(nanmean(tempPSTH(9000:10000)));
                         normalized_PSTH = (tempPSTH - airmean); % / airmean;
                         FR_mean_in_bin = mean(normalized_PSTH(t_min:t));
                         cumulativePSTH(time_ind,clusterIdx,x,j) = FR_mean_in_bin;

@@ -2,6 +2,8 @@
 %%
 [PSTH] = ComputePSTHMultiD(allclusters, "Conc",4);
 %%
-[smoothPSTH] = SmoothPSTH(PSTH, 200, "Conc");
+[smoothPSTH] = SmoothPSTH(PSTH, 250, "Conc");
 %%
-[cumulativePSTH] = CumulativePSTH(smoothPSTH, "Conc");
+[normalizedPSTH] = NormalizedPSTH(smoothPSTH, "Conc");
+%%
+%[cumulativePSTH] = CumulativePSTH(smoothPSTH, "Conc");
