@@ -17,7 +17,7 @@ CellNum = 10:5:ncells;
 % CellNum = 200;
 
 t_min = 1;
-t_max = size (smoothPSTH5D,1);
+t_max = size (smoothPSTH5D,2);
 
 nboot = 10;
 GENERAL_PERF_Pre = zeros(20,length(CellNum),4,nboot,5);
@@ -96,7 +96,7 @@ for j = 1:5
     imagesc(squeeze(mean(xx(:,:,:,j),3))',[0 1])
     axis('square');
     figCount = figCount+1;
-    xlim([0.5 t_max +0.5])
+    xlim([0.5 30.5])
     set(gca,'TickDir','out')
 end
 colormap('jet')

@@ -4,6 +4,7 @@
 %%
 [smoothPSTH] = SmoothPSTH(PSTH, 200, "Conc");
 %%
-[normalizedPSTH] = NormalizedPSTH(smoothPSTH, "Conc");
+% [cumulativePSTH] = CumulativePSTH(smoothPSTH, "Conc");
 %%
-[cumulativePSTH] = CumulativePSTH(normalizedPSTH, "Conc");
+[normalizedPSTH] = NormalizedPSTH(smoothPSTH, "Conc");
+[cumulativePSTH] = NormalizedCumulativePSTH(normalizedPSTH, "Conc");
