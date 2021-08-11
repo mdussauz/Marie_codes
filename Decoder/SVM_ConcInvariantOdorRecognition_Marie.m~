@@ -29,8 +29,8 @@ for t = t_min:t_max %time %each bin is 200 ms
     x = zscore(x(:,:),0,2); %zscore in dim 2 so here for each identity 
     x = reshape(x,[ncells 5 4 max_rep]); %nber of cells id conc rep
     
-    for test = 1:max_rep % rep
-        trainset = setdiff(1:max_rep,test); %here pick 4 of the rep as training set
+    for test = 1:5 % rep
+        trainset = setdiff(1:5,test); %here pick 4 of the rep as training set
         %    C = setdiff(A,B) for vectors A and B, returns the values in A that
         %    are not in B with no repetitions. C will be sorted.
         xtrain = squeeze(x(:,:,:,trainset));
@@ -83,9 +83,9 @@ end
 
 %% PLOTTING ------------------------------------
 %load('TC_SVC_Poly_noRetraining')
-cells_perf = squeeze(nanmean(GENERAL_PERF,3)); %mean across cross validation
+TCperf_pre = squeeze(nanmean(GENERAL_PERF,3));
 
-xx = squeeze(mean(GENERAL_PERF,4)); %mean across boots
+xx = squeeze(mean(GENERAL_PERF,4));
 
 figure;
 figCount = 1;
@@ -94,23 +94,38 @@ for j = 1:5
     imagesc(squeeze(mean(xx(:,:,:,j),3))',[0 1])
     axis('square');
     figCount = figCount+1;
-    xlim([(t_min -0.5) (t_max +0.5)])
+    xlim([0.5 (t_max +0.5)])
     set(gca,'TickDir','out')
 end
 colormap('jet')
 
-
-% %%
-% CellIdx = 39; % corresponds to 200 cells
-% dprime = [];
-% for odor = 1:5
-%     for t = t_min:t_max
-%         temp1 = squeeze(cells_perf(t,CellIdx,:,odor));
-% %         temp3 = squeeze(MCperf_pre(t,CellIdx,:,odor));
-% %         dprime(odor,t) = abs(nanmean(temp1)-nanmean(temp3))/sqrt(0.5*(var(temp1)+var(temp3)));
+% %load('MC_SVC_Poly_noRetraining')
+% MCperf_pre = squeeze(nanmean(GENERAL_PERF_Pre,3));
 % 
-%     end
+% xx = squeeze(mean(GENERAL_PERF_Pre,4));
+
+% figure;
+% figCount = 1;
+% for j = 1:5
+%     subplot(5,2,figCount);
+%     imagesc(squeeze(mean(xx(:,:,:,j),3))',[0 1])
+%     axis('square');
+%     figCount = figCount+1;
+%     xlim([0.5 30.5])
+%     set(gca,'TickDir','out')
 % end
+% colormap('jet')
+%%
+CellIdx = 39; % corresponds to 200 cells
+dprime = [];
+for odor = 1:5
+    for t = t_min:t_max
+        temp1 = squeeze(TCperf_pre(t,CellIdx,:,odor));
+%         temp3 = squeeze(MCperf_pre(t,CellIdx,:,odor));
+%         dprime(odor,t) = abs(nanmean(temp1)-nanmean(temp3))/sqrt(0.5*(var(temp1)+var(temp3)));
+
+    end
+end
 % figure;hold on;
 % dprimeExample = squeeze(dprime(4,:));
 % plot(1:t_max,dprimeExample(:,1),'-k')
@@ -138,7 +153,7 @@ colormap('jet')
 %%
 figure;hold on;
 CellIdx = 39;
-temp1 = squeeze(cells_perf(:,CellIdx,:,4));
+temp1 = squeeze(TCperf_pre(:,CellIdx,:,4));
 % temp3 = squeeze(MCperf_pre(:,CellIdx,:,4));
 
 shadedErrorBar(1:t_max,mean(temp1,2),std(temp1,0,2)./sqrt(10),'LineProps','-r')
@@ -148,7 +163,7 @@ set(gca,'TickDir','out')
 figure;hold on;
 TimePoint = 15; %15 for AON
 %TimePoint = 8;
-temp1 = squeeze(cells_perf(TimePoint,:,:,4));
+temp1 = squeeze(TCperf_pre(TimePoint,:,:,4));
 % temp3 = squeeze(MCperf_pre(TimePoint,:,:,4));
 
 shadedErrorBar(1:size(temp1,1),mean(temp1,2),std(temp1,0,2)./sqrt(10),'LineProps','-r')
