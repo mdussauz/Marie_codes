@@ -1,0 +1,38 @@
+function []= plotOdorConcActivityMatrix(smoothPSTH)
+
+%written by MD
+%input PSTH 4D from conc experiments
+% Smoothened PSTH with the following dimensions:
+% Neurons x Stimuli x time x Repeats 
+%plot odor-evoked activity averaged across repeats
+%of all neurons for each conc and each odor
+%-------------------------------------------------
+
+ncells = size (response_matrix,2);
+max_rep = 5;
+x = reshape(smoothPSTH,[ncells 5 4 max_rep]); %[nber of cells id conc rep]
+firingRatesAverage = nanmean(x,5);
+
+firstbin = -10;
+lastbin = 10;
+
+for whatsmell = 1:5
+    figure(whatsmell)
+    
+    FRAverageConc = squeeze(firingRatesAverage(:,whatsmell,:,:));
+    
+    for whatconc = 1:4
+        subplot(1,4,whatconc)
+        X = FRAverageConc(:,whatconc,:);
+        h = imagesc(squeeze(X));
+        set(h, 'XData', [firstbin, lastbin]);
+        xlim([-10, 10]);
+        caxis([0  70]);
+        xline(0,'k--');
+        xline(4,'k--');
+        clear X; clear Y;
+    end
+    colormap(parula);
+    title( ['Odor',  num2str(whatsmell)])
+    
+end

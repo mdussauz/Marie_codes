@@ -1,0 +1,31 @@
+function []= plotZScoredOdorConcMatrix(smoothPSTH)
+
+%written by MD
+% Z SCORE response matrix for each concentration and each odor
+%input PSTH 4D from conc experiments
+% Smoothened PSTH with the following dimensions:
+% Neurons x Stimuli x time x Repeats 
+%plot z scored odor-evoked activity averaged across repeats
+%of all neurons for each conc and each odor
+
+% According to Schnoonover et al 2020, z scoring the smoothed PSTH by 
+% substracting for each single unit its spontaneous baseline firing rate 
+% across all trials (4s before stimulus onset) and divided by the 
+% standard deviation of firing rates during the baseline epoch.
+% Hence response maps indicates changes in FR in units of std of 
+% spontaneous activity. 
+%-------------------------------------------------
+
+ncells = size (response_matrix,2);
+max_rep = 5;
+x = reshape(smoothPSTH,[ncells 5 4 tot_time max_rep]); %[nber of cells id conc timestamps rep]
+firingRatesAverage = nanmean(x,5);
+
+mu = squeeze(mean(firingRatesAverage(:,:,:,6000:10000),[2 3 4]));
+sigma = squeeze(std(firingRatesAverage(:,:,:,6000:10000),0,[2 3 4]));
+z_score = (firingRatesAverage(:,:,:,:) - mu) ./ sigma;
+
+firstbin = -10;
+lastbin = 10;
+
+end

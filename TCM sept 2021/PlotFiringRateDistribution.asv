@@ -1,0 +1,6 @@
+function [] = PlotFiringRateDistribution(smoothPSTH)
+
+mu = squeeze(mean(firingRatesAverage(:,:,:,6000:10000),[2 3 4]));
+histogram(mu)
+
+end 
