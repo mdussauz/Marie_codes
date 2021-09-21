@@ -6,9 +6,8 @@ x = reshape(smoothPSTH,[ncells 5 4 tot_time max_rep]); %[nber of cells id conc t
 
 for whatsmell = 1:5
     for whatconc = 1:4 
-        for rep = 1:5
         meanOdorFR = squeeze(mean(x(:,whatsmell,whatconc,10000:14000,rep),4  ));
-
+        odormeanFR = squeeze(nanmean(x(:,whatsmell,whatconc,:),[1 4]));
 
 R = corrcoef(A,B)
 
