@@ -44,7 +44,7 @@ for whatsmell = 1:5
     end
     colormap(redblue);
     title( ['Odor',  num2str(whatsmell)])
-    colorbar ('Position', [0.8 0.1 0.01 0.8]);
+    colorbar ('Position', [0.95 0.1 0.01 0.8]);
     
 end
 
