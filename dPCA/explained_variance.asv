@@ -5,10 +5,9 @@ NOdors = 20; %  for id/conc exp
 NId = 5; % nber of odor id 
 NConc = 4; % nber of od conc
 NRep = 5; % nber of repeats 
-timestamps = 20000;
-Nneurons = size(smoothPSTH,1);
+Nneurons = size(smoothPSTH4D,1);
 
-smoothPSTH5D = reshape(smoothPSTH,[Nneurons NId NConc timestamps NRep]);
+smoothPSTH5D = reshape(smoothPSTH4D,[Nneurons NId 4 max_rep]);
 
 % 3 arrays needed to run code
 NtrialNum = zeros(Nneurons, NId, NConc); %initialize 

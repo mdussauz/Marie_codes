@@ -15,8 +15,8 @@ x = reshape(dpc,ncomp, 5, 4, T);
 % this will depend on whether you are plotting identity or concentration
 % subspaces
 %which_comps = [4 15 18]; % for APC identity start trial/odor end odor
-which_comps = [3 10]; % for APC conc
-%which_comps = [5 6 15]; % for APC identity
+%which_comps = [3 10]; % for APC conc
+which_comps = [5 6 12]; % for APC identity
 %which_comps = [4 7 9]; % for AON identity
 %which_comps = [2 8 16]; % for AON concentration
 
