@@ -29,7 +29,7 @@ end
 
 handles.SampleRate = SampleRate;
 
-% 
+% Get full behavior traces 
 FirstTrialinAnalysis =2; % we chose to ignore trial 1 as potential misalignment with OpEphys
 %[TracesOut] = ConcatenateTraces(Traces, 1:length(TrialInfo.TrialID), SampleRate*startoffset);
 [TracesOut] = ConcatenateTraces(Traces, FirstTrialinAnalysis:length(TrialInfo.TrialID), SampleRate*startoffset);
