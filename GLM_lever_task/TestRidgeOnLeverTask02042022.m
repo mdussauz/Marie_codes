@@ -1,7 +1,7 @@
-function [spikeTrace,fullV,c,cFull] = TestRidgeOnLeverTask02022022()
+function [spikeTrace,fullV,c,cFull] = TestRidgeOnLeverTask02042022()
 %% what session
 
-WhichSession = 'O3_20210918_r0_processed';
+WhichSession = 'O3_20211005_r0_processed';
 SessionPath = 'C:\Users\Marie\Documents\data\Smellocator\Processed\Behavior\O3';
 handles.WhereSession.String = fullfile(SessionPath,WhichSession);
 
@@ -218,7 +218,7 @@ plot(cRegs(c, 1, Odor3Reg), 'linewidth', 2, 'color', 'c');
 plot(cRegs(c, 1, LeverVelReg), 'linewidth', 2, 'color', 'w');
 xlabel('Neurons');
 ylabel('expl var - cross-val. R^2');
-grid on; axis square;
+grid on; axis square
 title('Predicted R^2');
 %legend('full model','Trial','Odor1', 'Odor2', 'Odor3', 'Sniff', 'LeverPos', 'LeverVel')
 %legend('full model','Trial','Odor1', 'Odor2', 'Odor3', 'Sniff', 'LeverVel')

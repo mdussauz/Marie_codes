@@ -31,10 +31,10 @@ Odor1 = TrialTrace;
 Odor1(Odor1~=1) = 0;
 Odor2 = TrialTrace;
 Odor2(Odor2~=2) = 0;
-Odor2(Odor2==2) = 1;
+Odor2(Odor2=2) = 1;
 Odor3 = TrialTrace;
 Odor3(Odor3~=3) = 0;
-Odor3(Odor3==3) = 1;
+Odor3(Odor3~=3) = 0;
 Air = TrialTrace;
 Air(Air~=4) = 0;
 
@@ -47,8 +47,6 @@ Odor3Location = MotorTraceAdjusted.*Odor3;
 AirLocation = MotorTraceAdjusted.*Air;
 
 %% Plots
-start =1;
-finish = 20000;
 figure();
 x = 3;
 y = 4;

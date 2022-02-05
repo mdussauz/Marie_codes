@@ -38,8 +38,7 @@ ThermistorCut = ThermistorFiltered(dataToAdd+1:end); % remove extra points
 ThermistorNormalized = ThermistorCut - median(ThermistorCut);
 
 %% find points in the thermistor that correspond to the valley
-[therm_pks_1,therm_locs_1,therm_w_1,therm_p_1] = findpeaks(ThermistorNormalized, 'MinPeakProminence', 0.01, 'MinPeakDistance', 10);
-[therm_pks_2,therm_locs_2,therm_w_2,therm_p_2] = findpeaks(-ThermistorNormalized, 'MinPeakProminence', 0.01, 'MinPeakDistance', 10);
+%[therm_pks_2,therm_locs_2,therm_w_2,therm_p_2] = findpeaks(-ThermistorNormalized, 'MinPeakProminence', 0.001, 'MinPeakDistance', 10);
 
 %% Plots
 start =1;
@@ -77,6 +76,6 @@ figure(5)
 plot(ThermistorNormalized);
 hold on;
 plot(therm_locs_1,ThermistorNormalized(therm_locs_1),'o');
-hold on;
-plot(therm_locs_2,ThermistorNormalized(therm_locs_2),'o');
+% hold on;
+% plot(therm_locs_2,ThermistorNormalized(therm_locs_2),'o');
 
