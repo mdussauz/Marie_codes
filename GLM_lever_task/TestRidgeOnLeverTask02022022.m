@@ -90,7 +90,7 @@ ThermistorFiltered = ThermistorFiltered(dataToAdd+1:end);
 
 %% Create fullR = design matrix 
 %fullR = [TrialTrace Odor1Location Odor2Location Odor3Location ThermistorFiltered LeverTrace FilteredLeverVelocity];
-fullR = [TrialTrace Odor1Location Odor2Location Odor3Location ThermistorFiltered FilteredLeverVelocity];
+fullR = [TrialTrace Odor1Location Odor2Location Odor3Location FilteredLeverVelocity];
 fullR = bsxfun(@minus, fullR, mean(fullR, 1));
 
 % labels for different regressor sets. It is REALLY important this agrees with the order of regressors in fullR.

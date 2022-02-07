@@ -87,15 +87,16 @@ hold on;
 plot(therm_locs_2,ThermistorNormalized(therm_locs_2),'o');
 title('Positive and negative peaks of thermistor signal')
 
+%% combine both positive and negative peaks 
+therm_pks_combined = sort([therm_pks_1(:)',therm_pks_2(:)']);
+therm_locs_combined = sort([therm_locs_1(:)',therm_locs_2(:)']);
+
+% -- Plot
 figure(6)
 plot(ThermistorNormalized);
 hold on;
 plot(therm_locs_combined,ThermistorNormalized(therm_locs_combined),'o');
 title('Both negative and positive peaks')
-
-%% combine both positive and negative peaks 
-therm_pks_combined = sort([therm_pks_1(:)',therm_pks_2(:)']);
-therm_locs_combined = sort([therm_locs_1(:)',therm_locs_2(:)']);
 
 %% Interpolating breathing signal based on peaks of inhalation and exhalation
 % -- Adding 1st and final value of Thermistor signal otherwise
@@ -103,8 +104,10 @@ therm_locs_combined = sort([therm_locs_1(:)',therm_locs_2(:)']);
 x = [1, therm_locs_combined, length(ThermistorNormalized)];
 y = [ThermistorNormalized(1); ThermistorNormalized(therm_locs_combined); ThermistorNormalized(end)];
 
-% -- Trying different kind of interpolating functions
+% -- Defining the stretch of data
 xx = 1:1:length(ThermistorNormalized); 
+
+% -- Trying different kind of interpolating functions
 yy = spline(x,y,xx);
 p = pchip(x,y,xx);
 m = makima(x,y,xx);
@@ -140,11 +143,11 @@ scaled_y = normalize(y, 'range', [1 2]);
 y_combined = [scaled_y(1); y_combined(:); scaled_y(end)];
 
 %-- interpolating between peaks to get an oscillating signal between peaks
-p_new = pchip(x,y_combined,xx);
+interpolated_thermistor = pchip(x,y_combined,xx);
 
 % Plots
 figure(10)
-plot(x,y_combined, 'o',xx, p_new);
+plot(x,y_combined, 'o',xx, interpolated_thermistor);
 hold on;
 plot(therm_locs_combined,ThermistorNormalized(therm_locs_combined),'o', xx,ThermistorNormalized);
 legend('New peaks','Interpolated signal','Old peaks','Original signal')
