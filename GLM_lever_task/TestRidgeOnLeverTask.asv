@@ -225,16 +225,16 @@ figure
 subplot(1,2,1)
 [~, c] = sort(cFull,'descend');
 plot(cFull(c), 'linewidth', 4, 'color', 'k'); hold on;
-plot(cRegs(c, 1, Odor1Reg), 'linewidth', 2);
-plot(cRegs(c, 1, Odor2Reg), 'linewidth', 2);
-plot(cRegs(c, 1, Odor3Reg), 'linewidth', 2);
-plot(cRegs(c, 1, LeverReg), 'linewidth', 2);
-plot(cRegs(c, 1, MotorReg), 'linewidth', 2);
+plot(cRegs(c, 1, Odor1Reg), 'linewidth', 4, 'color', 'r');
+plot(cRegs(c, 1, Odor2Reg), 'linewidth', 4, 'color', 'r');
+plot(cRegs(c, 1, Odor3Reg), 'linewidth', 4, 'color', 'r');
+plot(cRegs(c, 1, LeverReg), 'linewidth', 4, 'color', 'g');
+plot(cRegs(c, 1, MotorReg), 'linewidth', 4, 'color', 'b');
 xlabel('Neurons');
 ylabel('expl var - cross-val. R^2');
 grid on; axis square
 title('Predicted R^2');
-legend('full model','Odor1','Odor2','Odor3', 'Lever', 'Motor')
+legend('full model','Odor','Lever', 'Motor')
 
 subplot(1,2,2)
 % fullMean = [mean(cRegs(:, 1, OdorReg)) mean(cRegs(:, 1, LeverReg)) mean(cRegs(:, 1, MotorReg))...

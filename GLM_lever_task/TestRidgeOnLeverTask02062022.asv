@@ -1,7 +1,7 @@
-function [spikeTrace,fullV,c,cFull] = TestRidgeOnLeverTask02042022()
+function [spikeTrace,fullV,c,cFull] = TestRidgeOnLeverTask02062022()
 %% what session
+
 WhichSession = 'O3_20210918_r0_processed';
-%WhichSession = 'O3_20211005_r0_processed';
 SessionPath = 'C:\Users\Marie\Documents\data\Smellocator\Processed\Behavior\O3';
 handles.WhereSession.String = fullfile(SessionPath,WhichSession);
 
@@ -88,16 +88,58 @@ ThermistorFiltered = filter(b,a,SniffsTrace);  % filtez
 % cutting extra datapoints added for filtering
 ThermistorFiltered = ThermistorFiltered(dataToAdd+1:end);
 
+%% Rescale the data
+ThermistorNormalized = ThermistorFiltered - median(ThermistorFiltered);
+
+%% find points in the thermistor that correspond to the valley
+% finding positive peaks
+[therm_pks_1,therm_locs_1,therm_w_1,therm_p_1] = findpeaks(ThermistorNormalized, 'MinPeakProminence', 0.01, 'MinPeakDistance', 10);
+% finding negative peaks
+[therm_pks_2,therm_locs_2,therm_w_2,therm_p_2] = findpeaks(-ThermistorNormalized, 'MinPeakProminence', 0.01, 'MinPeakDistance', 10);
+
+%% combine both positive and negative peaks 
+therm_pks_combined = sort([therm_pks_1(:)',therm_pks_2(:)']);
+therm_locs_combined = sort([therm_locs_1(:)',therm_locs_2(:)']);
+
+%% Interpolating breathing signal based on peaks of inhalation and exhalation
+% -- Adding 1st and final value of Thermistor signal otherwise
+% interpolation is wrong at the beginning and at the end
+x = [1, therm_locs_combined, length(ThermistorNormalized)];
+y = [ThermistorNormalized(1); ThermistorNormalized(therm_locs_combined); ThermistorNormalized(end)];
+
+%% keeping signal between 2 values to remove slow oscillations
+
+%-- defining positive peaks as equal to 2 and negative peaks as equal to 1
+y_locs_1 = ones(length(therm_locs_1),1)*2;
+y_locs_2 = ones(length(therm_locs_2),1);
+
+%-- getting the index of sorted combined peaks
+[B,I] = sort([therm_locs_1(:)',therm_locs_2(:)']);
+
+%-- combining the new 1/2 peaks and sorting them based on index I
+y_combined = [y_locs_1(:)', y_locs_2(:)'];
+y_combined = y_combined(I);
+
+%-- adding start and end of signal for better interpolation after
+%scaling between 1 and 2
+scaled_y = normalize(y, 'range', [1 2]);
+y_combined = [scaled_y(1); y_combined(:); scaled_y(end)];
+
+%-- interpolating between peaks to get an oscillating signal between peaks
+xx = 1:1:length(ThermistorNormalized); 
+interpolated_thermistor = pchip(x,y_combined,xx);
+interpolated_thermistor = interpolated_thermistor';
+
 %% Create fullR = design matrix 
 %fullR = [TrialTrace Odor1Location Odor2Location Odor3Location ThermistorFiltered LeverTrace FilteredLeverVelocity];
-%fullR = [TrialTrace Odor1Location Odor2Location Odor3Location ThermistorFiltered FilteredLeverVelocity];
-fullR = [TrialTrace Odor1Location Odor2Location Odor3Location FilteredLeverVelocity];
+%fullR = [TrialTrace Odor1Location Odor2Location Odor3Location interpolated_thermistor FilteredLeverVelocity];
+fullR = [TrialTrace Odor1Location Odor2Location Odor3Location interpolated_thermistor];
 fullR = bsxfun(@minus, fullR, mean(fullR, 1));
 
 % labels for different regressor sets. It is REALLY important this agrees with the order of regressors in fullR.
 %regLabels = {'Trial On/Off' 'Odor1 location' 'Odor2 location' 'Odor3 location' 'Sniff' 'Lever position' 'Lever velocity'};
 %regLabels = {'Trial On/Off' 'Odor1 location' 'Odor2 location' 'Odor3 location' 'Sniff' 'Lever velocity'};
-regLabels = {'Trial On/Off' 'Odor1 location' 'Odor2 location' 'Odor3 location' 'Lever velocity'};
+regLabels = {'Trial On/Off' 'Odor1 location' 'Odor2 location' 'Odor3 location' 'Sniff'};
 
 %index to reconstruct different response kernels
 regIdx = [
@@ -105,23 +147,24 @@ regIdx = [
     ones(1,size(Odor1Location,2))*find(ismember(regLabels,'Odor1 location')) ...
     ones(1,size(Odor2Location,2))*find(ismember(regLabels,'Odor2 location')) ...
     ones(1,size(Odor3Location,2))*find(ismember(regLabels,'Odor3 location'))...
-    ones(1,size(FilteredLeverVelocity,2))*find(ismember(regLabels,'Lever velocity'))];
+    ones(1,size(ThermistorFiltered,2))*find(ismember(regLabels,'Sniff'))];
 %    ones(1,size(FilteredLeverVelocity,2))*find(ismember(regLabels,'Lever velocity'))
 %    ones(1,size(FilteredLever,2))*find(ismember(regLabels,'Lever position')) ...
-%   ones(1,size(ThermistorFiltered,2))*find(ismember(regLabels,'Sniff'))
+
 
 disp('Regressors and labels computed');
 
 % regressor groups
 %regGroups = {'Trial On/Off' 'Odor1 location' 'Odor2 location' 'Odor3 location' 'Sniff' 'Lever position' 'Lever velocity'}; %group names, second row are individual regressor labels
 %regGroups = {'Trial On/Off' 'Odor1 location' 'Odor2 location' 'Odor3 location' 'Sniff' 'Lever velocity'};
-regGroups = {'Trial On/Off' 'Odor1 location' 'Odor2 location' 'Odor3 location' 'Lever velocity'};
+%regGroups = {'Trial On/Off' 'Odor1 location' 'Odor2 location' 'Odor3 location' 'Sniff' 'Lever velocity'};
+regGroups = {'Trial On/Off' 'Odor1 location' 'Odor2 location' 'Odor3 location' 'Sniff'};
 regGroups{2,1} = {'Trial On/Off'};
 regGroups{2,2} = {'Odor1 location'};
 regGroups{2,3} = {'Odor2 location'};
 regGroups{2,4} = {'Odor3 location'};
-regGroups{2,5} = {'Lever velocity'};
-%regGroups{2,4} = {'Sniff'};
+regGroups{2,5} = {'Sniff'};
+%regGroups{2,6} = {'Lever velocity'};
 %regGroups{2,5} = {'Lever velocity'};
 %regGroups{2,5} = {'Lever position'};
 %regGroups{2,6} = {'Lever velocity'};
@@ -202,9 +245,9 @@ TrialReg = ismember(regGroups(1,:), 'Trial On/Off');
 Odor1Reg = ismember(regGroups(1,:), 'Odor1 location');
 Odor2Reg = ismember(regGroups(1,:), 'Odor2 location');
 Odor3Reg = ismember(regGroups(1,:), 'Odor3 location');
-%SniffReg = ismember(regGroups(1,:), 'Sniff');
+SniffReg = ismember(regGroups(1,:), 'Sniff');
 %LeverPosReg = ismember(regGroups(1,:), 'Lever position');
-LeverVelReg = ismember(regGroups(1,:), 'Lever velocity');
+%LeverVelReg = ismember(regGroups(1,:), 'Lever velocity');
 
 figure
 subplot(1,2,1)
@@ -214,27 +257,28 @@ plot(cRegs(c, 1, TrialReg), 'linewidth', 2, 'color', 'r');
 plot(cRegs(c, 1, Odor1Reg), 'linewidth', 2, 'color', 'g');
 plot(cRegs(c, 1, Odor2Reg), 'linewidth', 2, 'color', 'b');
 plot(cRegs(c, 1, Odor3Reg), 'linewidth', 2, 'color', 'c');
-%plot(cRegs(c, 1, SniffReg), 'linewidth', 2, 'color', 'm');
+plot(cRegs(c, 1, SniffReg), 'linewidth', 2, 'color', 'm');
 %plot(cRegs(c, 1, LeverPosReg), 'linewidth', 2, 'color', 'y');
-plot(cRegs(c, 1, LeverVelReg), 'linewidth', 2, 'color', 'w');
+%plot(cRegs(c, 1, LeverVelReg), 'linewidth', 2, 'color', 'w');
 xlabel('Neurons');
 ylabel('expl var - cross-val. R^2');
 grid on; axis square
 title('Predicted R^2');
 %legend('full model','Trial','Odor1', 'Odor2', 'Odor3', 'Sniff', 'LeverPos', 'LeverVel')
 %legend('full model','Trial','Odor1', 'Odor2', 'Odor3', 'Sniff', 'LeverVel')
-legend('full model','Trial','Odor1', 'Odor2', 'Odor3', 'LeverVel')
+%legend('full model','Trial','Odor1', 'Odor2', 'Odor3', 'LeverVel')
+legend('full model','Trial','Odor1', 'Odor2', 'Odor3', 'Sniff')
 
 subplot(1,2,2)
 fullMean = [mean(cRegs(:, 1, TrialReg)) mean(cRegs(:, 1, Odor1Reg)) ...
             mean(cRegs(:, 1, Odor2Reg)) mean(cRegs(:, 1, Odor3Reg))...
-            mean(cRegs(:, 1, LeverVelReg))];
-        %    mean(cRegs(:, 1, SniffReg)) ...
+            mean(cRegs(:, 1, SniffReg))];
+           % mean(cRegs(:, 1, LeverVelReg))];  
           %  mean(cRegs(:, 1, LeverPosReg))...
 fullError = [sem(cRegs(:, 1, TrialReg)) sem(cRegs(:, 1, Odor1Reg)) ...
              sem(cRegs(:, 1, Odor2Reg)) sem(cRegs(:, 1, Odor3Reg))...
-             sem(cRegs(:, 1, LeverVelReg))];
-            %   sem(cRegs(:, 1, SniffReg)) ...
+             sem(cRegs(:, 1, SniffReg))];
+           %  sem(cRegs(:, 1, LeverVelReg))];
           %   sem(cRegs(:, 1, LeverPosReg))...
 
 errorbar(fullMean,fullError,'k-','linestyle','none','lineWidth',3); hold on
@@ -242,13 +286,13 @@ bar(fullMean,'FaceColor','g','EdgeColor','k','BarWidth',0.5,'LineWidth',2);
 
 uniqueMean = [mean(cFull-cRegs(:, 2, TrialReg)) mean(cFull-cRegs(:, 2, Odor1Reg))...
               mean(cFull-cRegs(:, 2, Odor2Reg)) mean(cFull-cRegs(:, 2, Odor3Reg))...
-              mean(cFull-cRegs(:, 2, LeverVelReg))];
-              %mean(cFull-cRegs(:, 2, SniffReg)) ... 
+              mean(cFull-cRegs(:, 2, SniffReg))];
+              %mean(cFull-cRegs(:, 2, LeverVelReg))];
               %mean(cFull-cRegs(:, 2, LeverPosReg))...
 uniqueError = [sem(cFull-cRegs(:, 2, TrialReg)) sem(cFull-cRegs(:, 2, Odor1Reg))...
                sem(cFull-cRegs(:, 2, Odor2Reg)) sem(cFull-cRegs(:, 2, Odor3Reg))...
-               sem(cFull-cRegs(:, 2, LeverVelReg))];
-               %sem(cFull-cRegs(:, 2, SniffReg)) ...
+               sem(cFull-cRegs(:, 2, SniffReg))];
+               %sem(cFull-cRegs(:, 2, LeverVelReg))];
                %sem(cFull-cRegs(:, 2, LeverPosReg))...
 
 errorbar(-uniqueMean,uniqueError,'k-','linestyle','none','lineWidth',3); hold on
@@ -258,7 +302,8 @@ ax = gca;
 set(ax,'xTick',1:size(fullMean,2))
 %set(ax,'xTickLabel',{'Trial','Odor1', 'Odor2', 'Odor3', 'Sniff', 'LeverPos', 'LeverVel'})
 %set(ax,'xTickLabel',{'Trial','Odor1', 'Odor2', 'Odor3', 'Sniff', 'LeverVel'})
-set(ax,'xTickLabel',{'Trial','Odor1', 'Odor2', 'Odor3', 'LeverVel'})
+%set(ax,'xTickLabel',{'Trial','Odor1', 'Odor2', 'Odor3', 'LeverVel'})
+set(ax,'xTickLabel',{'Trial','Odor1', 'Odor2', 'Odor3', 'Sniff'})
 set(ax,'XTickLabelRotation',45)
 ax.TickLength = [0 0];
 ylabel('cross-val. R^2 R^2'); ylim([-0.2 0.2]);
@@ -266,7 +311,7 @@ axis square
 
 %% nested function
 function [Vm, cBeta, cLabels] =  crossValModel(cLabels)
-        %rng(1) % for reproducibility
+        rng(1) % for reproducibility
         Vm = zeros(size(spikeTrace),'single'); %pre-allocate reconstructed spikeTrace
         randIdx = randperm(size(spikeTrace,1)); %generate randum number index
         foldCnt = floor(size(spikeTrace,1) / ridgeFolds);
