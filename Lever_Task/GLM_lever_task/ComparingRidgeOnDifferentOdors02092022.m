@@ -235,7 +235,7 @@ legend('Real data','Model 1', 'Model 2')
 %% nested function
 %% - cheat function for 1st model
 function [Vm, cBeta, cLabels] =  crossValModel1(cLabels)
-        rng(1) % for reproducibility
+        rng(1) % seed for reproducibility
         Vm = zeros(size(spikeTrace),'single'); %pre-allocate reconstructed spikeTrace
         randIdx = randperm(size(spikeTrace,1)); %generate randum number index
         foldCnt = floor(size(spikeTrace,1) / ridgeFolds);
@@ -259,7 +259,7 @@ end
 
 %% - cheat function for 2nd model
 function [Vm, cBeta, cLabels] =  crossValModel2(cLabels)
-        rng(1) % for reproducibility
+        rng(1) % seed for reproducibility
         Vm = zeros(size(spikeTrace),'single'); %pre-allocate reconstructed spikeTrace
         randIdx = randperm(size(spikeTrace,1)); %generate randum number index
         foldCnt = floor(size(spikeTrace,1) / ridgeFolds);
