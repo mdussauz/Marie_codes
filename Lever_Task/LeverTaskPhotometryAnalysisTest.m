@@ -1,24 +1,86 @@
 %LeverTaskPhotometryAnalysisTest
 
+%function [PhotometryData] = LeverTaskPhotometryAnalysisTest()
+
+clc;clear all;
+%C:\Users\Marie\Documents\data\Data_Photometry_Diego\Lever_task\DH1\2020-03-13_14-32-24
+WhichSession = '2020-03-10_15-53-01';
+SessionPath = 'C:\Users\Marie\Documents\data\Data_Photometry_Diego\Lever_task\DH1';
+handles.WhereSession.String = fullfile(SessionPath,WhichSession);
+myKsDir = handles.WhereSession.String;
+
 %% read and process event timestamps from open ephys file
-[Events] = ParseOpenEphysEvents('all_channels.events');
+% [Events] = ParseOpenEphysEvents('all_channels.events');
 
-StartTimeStamps      = [Events.Channel0.On Events.Channel0.Off];
-Odor1TimeStamps      = [Events.Channel1.On Events.Channel1.Off];
-Odor2TimeStamps      = [Events.Channel2.On Events.Channel2.Off];
-Odor3TimeStamps      = [Events.Channel3.On Events.Channel3.Off];
-TrialTimeStamps      = [Events.Channel4.On Events.Channel4.Off];
-WaterTimeStamps      = [Events.Channel5.On Events.Channel5.Off];
+% StartTimeStamps      = [Events.Channel0.On Events.Channel0.Off];
+% Odor1TimeStamps      = [Events.Channel1.On Events.Channel1.Off];
+% Odor2TimeStamps      = [Events.Channel2.On Events.Channel2.Off];
+% Odor3TimeStamps      = [Events.Channel3.On Events.Channel3.Off];
+% TrialTimeStamps      = [Events.Channel4.On Events.Channel4.Off];
+% WaterTimeStamps      = [Events.Channel5.On Events.Channel5.Off];
+% 
+% % delete first entry - just an empty trigger
+% StartTimeStamps(1,:) = [];
+% Odor1TimeStamps(1,:) = [];
+% Odor2TimeStamps(1,:) = [];
+% Odor3TimeStamps(1,:) = [];
+% TrialTimeStamps(1,:) = [];
+% WaterTimeStamps(1,:) = [];
 
-% delete first entry - just an empty trigger
-StartTimeStamps(1,:) = [];
-Odor1TimeStamps(1,:) = [];
-Odor2TimeStamps(1,:) = [];
-Odor3TimeStamps(1,:) = [];
-TrialTimeStamps(1,:) = [];
-WaterTimeStamps(1,:) = [];
+%% Get Trial Timestamps from the OpenEphys Events file
+filename = fullfile(myKsDir,'all_channels.events');
+
+%% heck to avoid going through empty files
+temp = dir(filename);
+if ~temp.bytes
+    TTLs = [];
+    EphysTuningTrials = [];
+    AuxData = [];
+    disp('empty events file');
+    return
+end
+
+[data, timestamps, info] = load_open_ephys_data(filename); % data has channel IDs
+% for some reason there is something wrong about that timestamps
+
+% adjust for clock offset between open ephys and kilosort
+[offset] = AdjustClockOffset(myKsDir);
+% offset = offset/OepsSampleRate;
+timestamps = timestamps - offset;
+
+
+% Get various events
+TTLTypes = unique(data);
+Tags = {'Air', 'Odor1', 'Odor2', 'Odor3', 'Trial', 'Reward', 'AirManifold', 'Licks'};
+for i = 1:numel(TTLTypes)
+    On = timestamps(intersect(find(info.eventId),find(data==TTLTypes(i))));
+    Off = timestamps(intersect(find(~info.eventId),find(data==TTLTypes(i))));
+    % delete the first off value, if it preceeds the On
+    Off(Off<On(1)) = [];
+    On(On>Off(end)) = [];
+    
+    if length(On)>length(Off)
+        keyboard;
+        foo = [On(1:end-1) Off]';
+        goo = foo(:);
+        On(find(diff(goo)<0,1,'first')/2,:) = [];
+    end
+        
+    temp = [On Off Off-On];
+    
+    % ignore any transitions faster than 1 ms - behavior resolution is 2 ms
+    temp(temp(:,3)<0.001,:) = [];
+    TTLs.(char(Tags(i))) = temp;
+end
 
 %% Read Photoreceivers and LEDs data from open ephys file
+% use what is written below
+%     foo = dir(fullfile(myKsDir,'*_ADC1.continuous')); % pressure sensor
+%     filename = fullfile(myKsDir,foo.name);
+%     [Auxdata1, timestamps, ~] = load_open_ephys_data(filename); % data has channel IDs
+%     foo = dir(fullfile(myKsDir,'*_ADC2.continuous')); % thermistor
+%     filename = fullfile(myKsDir,foo.name);
+%     [Auxdata2, ~, ~] = load_open_ephys_data(filename); % data has channel IDs
 
 [modData_1, Timestamps_PR_1, info_PR_1]  = load_open_ephys_data('100_ADC3.continuous');
 [modLED_1, Timestamps_LED_1, info_LED_1] = load_open_ephys_data('100_ADC5.continuous');
@@ -69,13 +131,19 @@ pc20F0               = prctile(demodDataC_1,20);                           % 20%
 pc40F0               = prctile(demodDataC_1,40);                           % 40% percentile value of baseline 
 pc80F0               = prctile(demodDataC_1,80);                           % 80% percentile value of baseline
 
+%% F0 option
+F0       = pc1F0;
+
 %% Caclulate DFF
 DFF                  = 100*((demodDataC_1-F0)/F0);
 
 %% Get analog/digital AuxData from Oeps files - for comparison with behavior data
-
+PhotometryData = [];
 % adjust for clock offset between open ephys and kilosort
-timestamps = timestamps - offset;
+[offset] = AdjustClockOffset(myKsDir);
+% adjust for clock offset between open ephys and kilosort
+%timestamps = timestamps - offset; % for now timestamps is not right
+Timestamps_LED_1 = Timestamps_LED_1 - offset; 
 
 % downsample to behavior resolution
 SampleRate = 500; % Samples/second
@@ -90,3 +158,23 @@ for MyTrial = 1:size(TTLs.Trial,1)
     PhotometryData(start_idx:stop_idx,3) = 1;
 end
 
+%%
+for MyOdor = 1:size(TTLs.Odor1,1)
+    [~,start_idx_od] = min(abs(PhotometryData(:,1)-TTLs.Odor1(MyOdor,1)));
+    [~,stop_idx_od]  = min(abs(PhotometryData(:,1)-TTLs.Odor1(MyOdor,2)));
+    PhotometryData(start_idx_od:stop_idx_od,4) = 1;
+end
+%% Plots
+
+subplot(3,1,1)
+plot(PhotometryData(1:200000,2))
+subplot(3,1,2)
+plot(PhotometryData(1:200000,3))
+subplot(3,1,3)
+plot(PhotometryData(1:200000,4))
+
+%%
+plot(PhotometryData(1:200000,2)); hold on
+plot(PhotometryData(1:200000,4)*9000)
+
+%end

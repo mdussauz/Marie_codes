@@ -108,7 +108,7 @@ StimList = repmat((1:20),1,5);
         DFF_1(DFF_1==0)        = NaN;                                      % replace 0 values by NaN's
         
         end
-        
+      
     subplot(4,5,i);
     plot(DFF_1');
     
