@@ -42,8 +42,6 @@ TrialStart_Ephys = TTLs.Trial(1,2);
 % factor to convert all behavior timestamps to match Ephys
 TimestampAdjuster = TrialStart_Ephys - TrialStart_behavior;
 
-
-
 %% Create New variable combining odor and motor move
 % Odor Trials 
 TrialTrace = TracesOut.Trial{1};
@@ -273,7 +271,7 @@ SniffReg = ismember(regGroups(1,:), 'Sniff');
 %LeverPosReg = ismember(regGroups(1,:), 'Lever position');
 %LeverVelReg = ismember(regGroups(1,:), 'Lever velocity');
 
-figure
+figure(1)
 subplot(1,2,1)
 [~, c] = sort(cFull,'descend');
 plot(cFull(c), 'linewidth', 2, 'color', 'k'); hold on;
@@ -350,6 +348,29 @@ set(ax,'XTickLabelRotation',45)
 ax.TickLength = [0 0];
 ylabel('cross-val. R^2 R^2'); ylim([-0.2 0.2]);
 axis square
+
+%%
+%%
+figure(2)
+subplot(3,1,1)
+plot(TrialTrace(1:20000), 'color', 'k')
+subplot(3,1,2)
+plot(ThermistorFiltered(1:20000), 'color', 'k')
+subplot(3,1,3)
+whatneuron = 8; %52
+plot(spikeTrace(1:20000, whatneuron),'k'); hold on; plot(fullV(1:20000, whatneuron),'r');
+legend('Real data','Model')
+
+%% 
+figure(3)
+subplot(3,1,1)
+plot(TrialTrace(1:20000), 'color', 'k')
+subplot(3,1,2)
+plot(TrialTrace(1:20000), 'color', 'k')
+subplot(3,1,2)
+plot(Odor1Location(1:20000), 'color','#0072BD'); hold on; plot(Odor2Location(1:20000), 'color','#A2142F'); hold on; plot(Odor3Location(1:20000),'color', '#EDB120')
+subplot(3,1,3)
+plot(interpolated_thermistor(1:20000), 'color', 'k')
 
 %% nested function
 function [Vm, cBeta, cLabels] =  crossValModel(cLabels)
