@@ -137,8 +137,8 @@ Timestamps_LED_1 = Timestamps_LED_1 - offset;
 % downsample to behavior resolution
 SampleRate = 500; % Samples/second
 
-PhotometryData(:,1) = 0:1/SampleRate:max(Timestamps_LED_1); %timestamps
-PhotometryData(:,2) = interp1q(Timestamps_LED_1,DFF,PhotometryData(:,1)); % DFF photometry signal
+PhotometryData(:,1) = 0:1/SampleRate:max(Timestamps_LED_1); %timestamps based on behavior timestamps res
+PhotometryData(:,2) = interp1q(Timestamps_LED_1,DFF,PhotometryData(:,1)); % DFF photometry signal with behavior timestamps res
 
 % create a continuous TrialOn vector
 for MyTrial = 1:size(TTLs.Trial,1)
@@ -147,7 +147,7 @@ for MyTrial = 1:size(TTLs.Trial,1)
     PhotometryData(start_idx:stop_idx,3) = 1;
 end
 
-%%
+%% create continuous trial on for odor 1???
 for MyOdor = 1:size(TTLs.Odor1,1)
     [~,start_idx_od] = min(abs(PhotometryData(:,1)-TTLs.Odor1(MyOdor,1)));
     [~,stop_idx_od]  = min(abs(PhotometryData(:,1)-TTLs.Odor1(MyOdor,2)));
@@ -202,7 +202,7 @@ switch whatmouse
         handles.WhereSession.String = fullfile(SessionPath,WhichSession);
 end
 
-%% Load relevant variables
+%% Load relevant variables from behavior session
 
 load(handles.WhereSession.String, 'Traces', 'PassiveReplayTraces', 'TrialInfo', 'TargetZones', ...
     'startoffset', 'errorflags', 'SampleRate', ...
@@ -223,19 +223,13 @@ whichTrials = [whichTrials TrialInfo.TargetZoneType(whichTrials) OdorTrial];
 whichTrials = sortrows(whichTrials,2);
 allTrials = [allTrials; whichTrials];
 allTrials(find(allTrials(:,1)==1),:) = []; % getting rid of 1st trial 
-
-%this part is to sort based on length of trial when the 3rd column of whichTrials was TrialInfo.Duration(whichTrials)
-% for tz = 1:12
-%     whichTrials(whichTrials(:,2)==tz,:) = sortrows(whichTrials(whichTrials(:,2)==tz,:),3);
-% end
-
 end
 
 %% 
 for odor = 1:3
 for TZ = 1:12
-    whatTrials = allTrials(find(allTrials(:,2)==TZ & allTrials(:,3)==odor));
-    meanthisPhotometryTrace = mean(PhotometryTraces(:,whatTrials),2);
+    whatTrials = allTrials(find(allTrials(:,2)==TZ & allTrials(:,3)==odor)); % find trials for this particular od and this particular TZ
+    meanthisPhotometryTrace = mean(PhotometryTraces(:,whatTrials),2); % mean photometry signal for those specific trials
     stdthisPhotometryTrace = std(PhotometryTraces(:,whatTrials),0,2);
     meanPerTrialType(odor, TZ, :) = meanthisPhotometryTrace;
     stdPerTrialType(odor, TZ, :) = stdthisPhotometryTrace;
@@ -258,9 +252,9 @@ for od = 1:3
     end
 end
 
-%% Get behavior traces from Trial x1 tox2
-startTrial = 36;
-endTrial = startTrial +5;
+%% Get behavior traces from Trial x1 to x2
+startTrial = 36; %x1
+endTrial = startTrial +5; %x2
 
 % load relevant variables
 load(handles.WhereSession.String, 'Traces', 'PassiveReplayTraces', 'TrialInfo', 'TargetZones', ...
@@ -329,10 +323,10 @@ set(gca,'XLim', [TracesOut.Timestamps{1, 1}(1)+TimestampAdjuster TrialInfo.Sessi
 
 %% Extract Trials from Trial x1 to x2
 
-[~,start_idx] = min(abs(PhotometryData(:,1)-TTLs.Trial(startTrial,1)));
-[~,stop_idx]  = min(abs(PhotometryData(:,1)-TTLs.Trial(endTrial,2)));
-begin_idx = start_idx - startoffset*SampleRate;
-end_idx = stop_idx + startoffset*SampleRate;
+[~,start_idx] = min(abs(PhotometryData(:,1)-TTLs.Trial(startTrial,1))); % timestamps of x1 trial in behavior stamps
+[~,stop_idx]  = min(abs(PhotometryData(:,1)-TTLs.Trial(endTrial,2))); % timestamps of x2 trial in behavior stamps
+begin_idx = start_idx - startoffset*SampleRate; %-1s
+end_idx = stop_idx + startoffset*SampleRate; %%+1s
 myPhotometryTime = PhotometryData(begin_idx:end_idx,1);
 myPhotometryTrace = PhotometryData(begin_idx:end_idx,2);
 
@@ -341,10 +335,8 @@ for i = 1:4
     handles.(['Trial',num2str(i),'Plot']) = fill(NaN,NaN,Plot_Colors(['Odor',num2str(i)]));
     hold on;
     handles.(['Trial',num2str(i),'Plot']).EdgeColor = 'none';
-    %ValveTS = TrialInfo.SessionTimestamps((TrialInfo.Odor(startTrial:endTrial)==i),1:2)' + TimestampAdjuster;  %changing to only include trials I want
     TS = TrialInfo.SessionTimestamps(startTrial:endTrial,1:2)+ TimestampAdjuster;
     ValveTS = TS((TrialInfo.Odor(startTrial:endTrial)==i),1:2)';
-    %ValveTS = TrialInfo.SessionTimestamps((TrialInfo.Odor==i),1:2)' + TimestampAdjuster;
     if ~isempty(ValveTS)
         handles.(['Trial',num2str(i),'Plot']).Vertices = [ ...
             reshape([ValveTS(:) ValveTS(:)]', 2*numel(ValveTS), []) , ...

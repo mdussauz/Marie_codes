@@ -64,8 +64,8 @@ MotorTraceAdjusted = MotorTrace + 125; % arbitrary value to remove negative numb
 %% Creating tine shifted array 
 MotorTraceShifted{1} = MotorTraceAdjusted;
 
-for i = 1:100
-    MotorTraceShifted{i+1} = circshift(MotorTraceAdjusted,i*10,1); % so here we are doing 10 sample shifts
+for i = 1:1000 
+    MotorTraceShifted{i+1} = circshift(MotorTraceAdjusted,i,1); % so here we are doing 10 sample shi
 end 
 
 clear MotorTrace;
