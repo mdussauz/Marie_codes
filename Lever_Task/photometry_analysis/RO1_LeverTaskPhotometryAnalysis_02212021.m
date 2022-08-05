@@ -10,7 +10,7 @@ switch whatmouse
         SessionPath = 'C:\Users\Marie\Documents\data\Data_Photometry_Diego\Lever_task\DH2';
         myKsDir = fullfile(SessionPath,WhichSession);
 
-    case 'DH4'
+    case 'DH4' % needs debugging 
         WhichSession = '2020-03-10_14-18-48';
         SessionPath = 'C:\Users\Marie\Documents\data\Data_Photometry_Diego\Lever_task\DH4';
         myKsDir = fullfile(SessionPath,WhichSession);
