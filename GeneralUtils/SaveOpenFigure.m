@@ -1,9 +1,9 @@
 %% Save Open Figures
 
 % Enter information
-AnimalName = 'O8';
-SessionDate = '202207062Pr';
-SessionType = 'OL';
+AnimalName = 'O7';
+SessionDate = '20220630';
+SessionType = 'OL_Tuning'; %OL %OL_Tuning
 
 % Create filename 
 figureFolder = '/mnt/data/Lever_Task_Figures';

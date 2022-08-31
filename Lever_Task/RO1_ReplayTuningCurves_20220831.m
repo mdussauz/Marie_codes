@@ -1,12 +1,35 @@
 %%TuningCurve comparisons for Replay
 
-%% for O5
-SessionPath = 'O1/O1_20211012_r0_processed.mat';
-ChosenUnits = []; %MyUnits = [8 35 28 55 39]; 
+% -- Leave ChosenUnits empty to plot all units
+%% for O1
+% SessionPath = 'O1/O1_20211012_r0_processed.mat';
+% ChosenUnits = []; %MyUnits = [8 35 28 55 39]; 
+
+%% for O2
+% SessionPath = 'O2/O2_20211011_r0_processed.mat';
+% ChosenUnits = []; %MyUnits = [8 35 28 55 39]; 
 
 %% for O3
 % SessionPath = 'O3/O3_20211005_r0_processed.mat';
-% ChosenUnits = [8 21 28 55 39]; %MyUnits = [8 35 28 55 39]; 
+% ChosenUnits = []; %ChosenUnits = [8 21 28 55 39]; %MyUnits = [8 35 28 55 39]; 
+
+%% for O5
+% SessionPath = 'O5/O5_20211005_r0_processed.mat'; %error related to OdorTTLs
+% % or 
+% SessionPath = 'O5/O5_20211006_r0_processed.mat'; %error related to motor
+% ChosenUnits = []; %MyUnits = [8 35 28 55 39]; 
+
+%% for O8
+% SessionPath = 'O8/O8_20220702_r0_processed.mat';
+% ChosenUnits = []; %ChosenUnits = [8 21 28 55 39]; %MyUnits = [8 35 28 55 39]; 
+
+%% for O9
+% SessionPath = 'O9/O9_20220630_r0_processed.mat';
+% ChosenUnits = []; %ChosenUnits = [8 21 28 55 39]; %MyUnits = [8 35 28 55 39]; 
+
+%% for O7
+SessionPath = 'O7/O7_20220630_r0_processed.mat';
+ChosenUnits = []; %ChosenUnits = [8 21 28 55 39]; %MyUnits = [8 35 28 55 39]; 
 
 %% for PCX4
 % SessionPath = 'PCX4/PCX4_20210721_r0_processed.mat';
@@ -61,7 +84,7 @@ title(mat2str([counts(1,:) counts(2,:) counts(3,:)]))
 
 %% Plot the tuning curves
 if isempty(ChosenUnits)
-    ChosenUnits = length(TuningCurve.ClosedLoopFull(1,1,:,1)); % to get all units
+    ChosenUnits = 1:length(TuningCurve.ClosedLoopFull(1,1,:,1)); % to get all units
 end
 for unit = 1:numel(ChosenUnits)  %max(PairedResiduals(:,4))
     if mod(unit,5) == 1
@@ -88,5 +111,5 @@ for unit = 1:numel(ChosenUnits)  %max(PairedResiduals(:,4))
     end
 end
 
-%% Plot the selected units
-PlotReplayResponses(SessionPath,ChosenUnits);
+%% Plot the selected units - not need right now
+%PlotReplayResponses(SessionPath,ChosenUnits);
