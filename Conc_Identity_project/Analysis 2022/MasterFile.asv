@@ -1,0 +1,6 @@
+% MasterFile
+% -- written by MD
+% comment sections based on needs 
+
+%% -- COMPILE 
+SessionInfo = ReadSessionDatatable(FilePath, FileName)
