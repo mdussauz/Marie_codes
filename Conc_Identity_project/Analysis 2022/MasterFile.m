@@ -12,8 +12,10 @@
 % section
 
 % extract info about session
-SessionInfo = ReadSessionDatatable(FilePath, FileName); 
+%SessionInfo = ReadSessionDatatable(FilePath, FileName); 
+SessionInfo = ReadSessionDatatable(); 
 
 % make the spike structure 
+[allcluster] = MakeSpikeStucture('AON', 'all');
 
 %% If exist, load spike structure 
