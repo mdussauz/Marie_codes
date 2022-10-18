@@ -1,4 +1,4 @@
-function [allcluster] = MakeSpikeStucture(BrainRegion, Mouse)
+function [allcluster] = MakeSpikeStucture(SessionInfo,BrainRegion, Mouse)
 % -- written by MD
 % -- create structure array for all neurons all sessions all mice
 % user must specify what to extract: 
@@ -25,6 +25,12 @@ switch AnalysisChoice
         myKsDir = SessionInfo.RecFile(strcmp( 'Y',SessionInfo.IncludeInAnalysis) & strcmp('AON',SessionInfo.BrainRegion)& strcmp( 'E3',SessionInfo.MouseName));
 end
 
+if strcmp(computer, 'PCWIN64')
+    addpath(genpath('Z:\mdussauz\PhotonCerber_Stimuli_on_server'))
+    addpath(genpath('Z:\mdussauz\ConcId\Sorted'))
+else
+    addpath(genpath('/mnt/data/PhotonCerber_Stimuli'))
+end
 %% Get Trial Timestamps from Open Ephys Events file
 
 allclusters = struct('id',[],'spikecount',[],'spikes',[], 'stimulus', []); %initiate

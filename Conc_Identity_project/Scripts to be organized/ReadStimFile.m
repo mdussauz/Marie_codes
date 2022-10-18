@@ -12,7 +12,12 @@ function  [StimTime, StimList, Nrepeats] = ReadStimFile(stimfilename)
 
 %%
 
-addpath(genpath('/mnt/data/PhotonCerber_Stimuli'))
+if strcmp(computer, 'PCWIN64')
+    addpath(genpath('Z:\mdussauz\PhotonCerber_Stimuli_on_server'))
+else
+    addpath(genpath('/mnt/data/PhotonCerber_Stimuli'))
+end
+
 %stimfilename = '190910_17_01.txt';
 
 fileID = fopen(stimfilename,'r');

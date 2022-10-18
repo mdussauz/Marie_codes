@@ -16,6 +16,6 @@
 SessionInfo = ReadSessionDatatable(); 
 
 % make the spike structure 
-[allcluster] = MakeSpikeStucture('AON', 'all');
+[allcluster] = MakeSpikeStucture(SessionInfo, 'AON', 'all');
 
 %% If exist, load spike structure 
