@@ -55,7 +55,7 @@ PSTH = PassiveTuning.RasterOut;
 [Nneurons,Nodor, Nloc,lastTS, Nrep] = size(PassiveTuning.RasterOut);
 
 %% Smooth PSTH - to get a continuous (time-dependent) rate variable
-timewindow = 200; % time window over which smoothing occurs % change as needed 
+timewindow = 100; % time window over which smoothing occurs % change as needed 
 
 clusterNum = 1:Nneurons;
 t_wid = timewindow;  % width of kernel (in ms)
@@ -111,12 +111,16 @@ end
 test_loc = 1; % 1 if testing -15 and +15
 loc_to_keep = (7 - test_loc):1:(7 + test_loc);
 
-response_matrix = cumulativePSTH(:,:,:,loc_to_keep,:); 
+% Choose to keep air stimulus or not (index 1)
+odor_to_keep = [2,3,4];
+
+response_matrix = cumulativePSTH(:,:,odor_to_keep,loc_to_keep,:); 
 
 %getting relevant variables `
 ncells = size (response_matrix,2);
 CellNum = 10:5:ncells; %performance evaluated for different numbers of neurons in steps of five.
 NlocFinal = length(loc_to_keep); %number of locations to decode
+NodorFinal = length(odor_to_keep);
 t_start = 1;
 t_end = size (response_matrix,1);
 
@@ -128,7 +132,7 @@ for t = t_start:t_end %for a specific time
     t
     x = squeeze(response_matrix(t,:,:,:,:)); % units x odor x loc x repeats
     x = zscore(x(:,:),0,2); %z scoring along odor identity
-    x = reshape(x,[ncells Nodor NlocFinal Nrep]);
+    x = reshape(x,[ncells NodorFinal NlocFinal Nrep]);
     
   
     for test = 1:Nrep %Cross-validated performance will be evaluated across held-out trials
@@ -138,15 +142,15 @@ for t = t_start:t_end %for a specific time
         xtest = squeeze(x(:,:,:,test)); % test set is the remaining repeat
         
         [nroi,ncategory,ndil,nreptrain] = size(xtrain);
-        nstim = Nodor*NlocFinal; %number of stimuli (number of odors x number of locations)
+        nstim = NodorFinal*NlocFinal; %number of stimuli (number of odors x number of locations)
         nTrainrep = nreptrain; %number of repeats in training set  
 
         % Creating the objective matrix (desired classifier target)
-        Output = zeros(Nodor,nstim);
-        Output_cross = zeros(Nodor,nstim,nreptrain);
+        Output = zeros(NodorFinal,nstim);
+        Output_cross = zeros(NodorFinal,nstim,nreptrain);
  
-        for k = 1:Nodor
-            Output(k,k:Nodor:end) = [1:1:NlocFinal];
+        for k = 1:NodorFinal
+            Output(k,k:NodorFinal:end) = [1:1:NlocFinal];
         end
         Output = repmat(Output,[1 nTrainrep]); % desired classifier target
         %Dimensions are odors x number of stimuli 
@@ -158,7 +162,7 @@ for t = t_start:t_end %for a specific time
                 X = xtrain(CellId,:)';
                 Xtest = xtest(CellId,:)';
 
-                for k = 1:Nodor
+                for k = 1:NodorFinal
                     Y = Output(k,:)';
                     template = templateSVM('Standardize',true); % define the model
                     % returns a support vector machine learner template 
@@ -209,7 +213,6 @@ xline(3, '--', {'odor','off'},'FontSize',8)
 
 % Performance across cell number 
 subplot(1,2,2)
-temp1 = reshape(GENERAL_PERF,[t_max size(CellNum,2) Nrep*Nboot]);
 timepoint = 10; %in sec performance at time to be plotted for increasing number of cells
 
 shadedErrorBar(1*5:5:size(CellNum,2)*5,nanmean(squeeze(temp1(10,:,:)),2)*100,...
