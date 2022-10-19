@@ -17,7 +17,7 @@
 % Classification performance is calculated as a correlation of the 
 % decoder output with the objective matrix
 
-%% Loading data
+
 % Input: PassiveTuning.RasterOut 
 % PassiveTuning is a structure created by running the LocationDataParser() function on the
 % 'behavior' session and after running Preprocessing on sorted ephys session 
@@ -36,12 +36,15 @@
 % Location 6 is motor -15 
 % Location 7 is motor 0
 % Location 8 is motor +15 
+%% USER: LOADING DATA
 
-% load data directly if PassiveTuning structure was saved
-load('C:\Users\Marie\Documents\data\Smellocator\PassiveTuningDecoder\PassiveTuning.mat')
+% load data directly if PassiveTuning structure was saved - change path
+% accordingly
+%load('C:\Users\Marie\Documents\data\Smellocator\PassiveTuningDecoder\PassiveTuning_E3_20220713.mat')
 
-% run LocationDataParser() if PassiveTuning wasn't saved
-%[PassiveTuning] = LocationTuningDataParser('E3_20220713_o3.mat');
+% run LocationDataParser() if PassiveTuning wasn't saved or to test
+% different mice (change behavior filename if so)
+[PassiveTuning] = LocationTuningDataParser('E3_20220713_o3.mat');
 
 %% Raster plots for sanity check 
 % uncomment and change inputs as needed 
@@ -50,29 +53,47 @@ load('C:\Users\Marie\Documents\data\Smellocator\PassiveTuningDecoder\PassiveTuni
 % hold on; PlotLocationTuningRaster(PassiveTuning.RasterOut, whichneuron, whichunit)
 
 %% FORMATTING THE DATA TO BE INPUTED IN DECODER
+%% USER: SPECIFY PARAMETERS 
+
+% USER - Choose to smooth or not, and time window
+Tosmooth =1; % 1 to smooth PSTH and 0 to bypass smoothing
+timewindow = 200; % time window over which smoothing occurs - change as needed 
+
+% USER - Choose which locations to test around 0 (index 7)
+test_loc = 1; % 1 if testing -15 and +15; 2 if testing -30, -15, +15 and +30
+loc_to_keep = (7 - test_loc):1:(7 + test_loc); %do not change if you want to test around center loc
+
+% USER - Choose to keep air stimulus or not (index 1)
+odor_to_keep = [2,3,4];
+
+
 %% PSTH 
 PSTH = PassiveTuning.RasterOut;
 [Nneurons,Nodor, Nloc,lastTS, Nrep] = size(PassiveTuning.RasterOut);
 
 %% Smooth PSTH - to get a continuous (time-dependent) rate variable
-timewindow = 100; % time window over which smoothing occurs % change as needed 
+if Tosmooth == 1
 
-clusterNum = 1:Nneurons;
-t_wid = timewindow;  % width of kernel (in ms)
-taxis = -(t_wid*5):(t_wid*5);  % e.g. make a time axis of 1000 ms for a window of 100 ms
-gauss_kernel = normpdf(taxis, 0, t_wid);
-gauss_kernel = gauss_kernel ./ sum(gauss_kernel);
+    clusterNum = 1:Nneurons;
+    t_wid = timewindow;  % width of kernel (in ms)
+    taxis = -(t_wid*5):(t_wid*5);  % e.g. make a time axis of 1000 ms for a window of 100 ms
+    gauss_kernel = normpdf(taxis, 0, t_wid);
+    gauss_kernel = gauss_kernel ./ sum(gauss_kernel);
 
-for clusterIdx = 1:Nneurons % loop through each unit
-    for x = 1:Nodor %for each odor identity
-        for y = 1:Nloc % for each location 
-            for j = 1:Nrep % loop through each repeat
-                tempPSTH = squeeze(PSTH(clusterIdx,x,y,:,j)); % for one cluster, all times for one type
-                zs = conv(tempPSTH,gauss_kernel,'same'); %in ms
-                smoothPSTH(clusterIdx,x,y,:,j) = zs*1000; %converting firing rate to Hz (1 ms = 1000 Hz)
+    for clusterIdx = 1:Nneurons % loop through each unit
+        for x = 1:Nodor %for each odor identity
+            for y = 1:Nloc % for each location
+                for j = 1:Nrep % loop through each repeat
+                    tempPSTH = squeeze(PSTH(clusterIdx,x,y,:,j)); % for one cluster, all times for one type
+                    zs = conv(tempPSTH,gauss_kernel,'same'); %in ms
+                    smoothPSTH(clusterIdx,x,y,:,j) = zs*1000; %converting firing rate to Hz (1 ms = 1000 Hz)
+                end
             end
         end
     end
+
+    PSTH = smoothPSTH;
+
 end
 %% Making cumulative PSTH over relevant time period
 % We want to get classification accuracy as a function
@@ -106,15 +127,7 @@ end
 %% DECODER
 %%
 %cumulativePSTH dimensions are: time x units x odors x locations x repeats
-
-% Choose which locations to test around 0 (index 7)
-test_loc = 1; % 1 if testing -15 and +15
-loc_to_keep = (7 - test_loc):1:(7 + test_loc);
-
-% Choose to keep air stimulus or not (index 1)
-odor_to_keep = [2,3,4];
-
-response_matrix = cumulativePSTH(:,:,odor_to_keep,loc_to_keep,:); 
+response_matrix = cumulativePSTH(:,:,odor_to_keep,loc_to_keep,:); %based on user specified params
 
 %getting relevant variables `
 ncells = size (response_matrix,2);
@@ -125,17 +138,17 @@ t_start = 1;
 t_end = size (response_matrix,1);
 
 Nboot = 10; %number of bootstraps 
-
+CellIter
 GENERAL_PERF = zeros(t_end,length(CellNum),Nrep,Nboot); % classifier output: time points X number of neuron X repeats X bootstraps
 
 for t = t_start:t_end %for a specific time
     t
     x = squeeze(response_matrix(t,:,:,:,:)); % units x odor x loc x repeats
-    x = zscore(x(:,:),0,2); %z scoring along odor identity
+    x = zscore(x(:,:),0,2); %z-scoring along odor identity to avoid overfitting of neurons with high FR
     x = reshape(x,[ncells NodorFinal NlocFinal Nrep]);
     
   
-    for test = 1:Nrep %Cross-validated performance will be evaluated across held-out trials
+    for test = 1:Nrep %Cross-validated performance will be evaluated across held-out trials - here 1 repeat
         % Defining the training and test sets 
         trainset = setdiff(1:4,test); %here pick 3 out of 4 repeats as training set
         xtrain = squeeze(x(:,:,:,trainset));
@@ -155,15 +168,15 @@ for t = t_start:t_end %for a specific time
         Output = repmat(Output,[1 nTrainrep]); % desired classifier target
         %Dimensions are odors x number of stimuli 
 
-        for CellIter = 1:length(CellNum)
+        for CellIter = 1:length(CellNum) % for different number of cells
             PERF = zeros(Nboot,2);            
-            for boot = 1:Nboot
-                CellId = randperm(ncells,CellNum(CellIter));
+            for boot = 1:Nboot %bootstrapping - picking randomly 10 different times
+                CellId = randperm(ncells,CellNum(CellIter)); % new vector of cells on which train/test will be performed
                 X = xtrain(CellId,:)';
                 Xtest = xtest(CellId,:)';
 
-                for k = 1:NodorFinal
-                    Y = Output(k,:)';
+                for k = 1:NodorFinal % for each odor 
+                    Y = Output(k,:)'; %target output for that specific odor 
                     template = templateSVM('Standardize',true); % define the model
                     % returns a support vector machine learner template 
                     % suitable for training error-correcting output code (ECOC) multiclass models
