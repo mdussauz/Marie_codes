@@ -82,7 +82,7 @@ switch Dim
 
            for j = 1:5 % for j = 1:numel(reps) %repeat number % have to bypass that when >5
         SpikeTimes = goodcluster(whichcluster).spikes{1, reps(j)};
-        myspikecount = histcounts(SpikeTimes, tbins);
+        myspikecount = histcounts(SpikeTimes, tbins); %partitions the spiketimes into bins, and returns the count in each bin
         PSTH5D(whichcluster,x,y,:,j) = [myspikecount];
            end
         end 
