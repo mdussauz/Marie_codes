@@ -196,7 +196,7 @@ for t = t_start:t_end %for a specific time
                     label(k,:) = a;
 
                 end
-                PERF(boot,1) = corr2(label,Output(:,1:nstim));
+                PERF(boot,1) = corr2(label,Output(:,1:nstim)); %compare the prediction to the truth (target output) 
                 
             end
 
@@ -213,10 +213,12 @@ end
 % Performance across time
 figure(1);
 subplot(1,2,1)
-temp1 = reshape(GENERAL_PERF,[t_end size(CellNum,2) Nrep*Nboot]);
+temp = reshape(GENERAL_PERF,[t_end size(CellNum,2) Nrep*Nboot]);
+xx = nanmean(squeeze(temp(:,end,:)),2);
+yy = nanstd(squeeze(temp(:,10,:)),0,2);
 
-shadedErrorBar(1*0.2:0.2:20*0.2,nanmean(squeeze(temp1(:,end,:)),2)*100,... 
-    (nanstd(squeeze(temp1(:,10,:)),0,2)*100)./sqrt(Nrep*Nboot))
+shadedErrorBar(1*0.2:0.2:20*0.2,xx*100,... 
+    (yy*100)./sqrt(Nrep*Nboot))
 xlabel('Time (s)')
 ylabel('Classifier performance (%)')
 hold on; 

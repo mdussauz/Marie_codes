@@ -207,7 +207,7 @@ end
 % Performance across time
 figure(1);
 subplot(1,2,1)
-xx1 = squeeze(nanmean(GENERAL_PERF,3)); %TC_pre %mean across repeats
+xx1 = squeeze(nanmean(GENERAL_PERF_Pre,3)); %TC_pre %mean across repeats
 odor = 3;
 temp1 = squeeze(xx1(:,end,:,odor));% all time x all cells x all boots x odor 3
 
@@ -234,12 +234,12 @@ set(gca,'TickDir','out')
 
 %%
 figure(2)
-xx2 = squeeze(mean(GENERAL_PERF,4)); %mean across boots
+xx2 = squeeze(mean(GENERAL_PERF_Pre,4)); %mean across boots
 
 figCount = 1;
 for j = 1:NodorFinal
     subplot(3,2,figCount);
-    imagesc(squeeze(mean(xx2(:,:,:,j),3))',[0 1])
+    imagesc(squeeze(mean(xx(:,:,:,j),3))',[0 1])
     axis('square');
     figCount = figCount+1;
     %xlim([2.5 20.5])
