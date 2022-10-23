@@ -73,7 +73,4 @@ figure(3) %CL/PR - modulated with respect to number of units
 scatter(Y1, percentmodulated (:,chosen_cutoff,3), 'o', 'k')
 refline
 xlabel('# of units')
-ylabel('% unit modulated during passive replay')
-
-
-    
+ylabel('% unit modulated during passive replay')    

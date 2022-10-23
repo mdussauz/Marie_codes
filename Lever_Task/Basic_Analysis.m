@@ -26,7 +26,7 @@ startoffset = 1;
 
 % trialalignedspikes = spiketimes relative to the most recent trial''s'' start timestamp');
 
-% Perturbations - Might be useful at some point but not used right now
+Perturbations - Might be useful at some point but not used right now
 if any(strcmp(handles.TrialInfo.Perturbation(:,1),'OL-Replay'))
     [handles.ReplayAlignedSpikes, handles.ReplayEvents, handles.ReplayInfo] = ...
         ReplayAlignedSpikeTimes(SingleUnits,TTLs,...
@@ -42,7 +42,7 @@ end
 %% Getting number of units in session > will be useful to normalize results .i.e responsiveness 
 handles.NumUnits.String = num2str(size(SingleUnits,2));
 
-N = handles.NumUnits.String; % renaming var
+N = size(SingleUnits,2);
 MyUnits = (1:N);
 
 %% Getting the FR for different windows
