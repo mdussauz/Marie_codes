@@ -93,7 +93,7 @@ resptest_values(:,:)    = mean(squeeze(mean(dataset_periods,1,'omitnan')),2,'omi
 
 %% Identification of responsive boutons, both enhanced and suppressed - SINGLE THRESHOLD VALUES
 
-num_Category                = size(resptest_values,2);                                
+num_Category                = size(resptest_values,2);                         
 resptest_index_single       = NaN(num_Channel,num_Category);
 
 % Identification of boutons showing enhanced or suppresed responses for each period
