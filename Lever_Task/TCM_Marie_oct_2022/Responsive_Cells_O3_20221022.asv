@@ -1,11 +1,17 @@
 %Responsive_Cells_O3_20221022
 
-%% Select a processed file to analyze
+%% USER - select which mouse open loop session to analyze
+mousename = 'O1';
 
 % [WhichSession, SessionPath] = uigetfile(); % to be used later for more flexibility
-
-WhichSession = 'O3_20211005_r0_processed';
-SessionPath = 'C:\Users\Marie\Documents\data\Smellocator\Processed\Behavior\O3';
+switch mousename
+    case 'O3'
+        WhichSession = 'O3_20211005_r0_processed';
+        SessionPath = 'C:\Users\Marie\Documents\data\Smellocator\Processed\Behavior\O3';
+    case 'O1'
+        WhichSession = 'O1_20211012_r0_processed.mat';
+        SessionPath = 'C:\Users\Marie\Documents\data\Smellocator\Processed\Behavior\O1';
+end
 handles.WhereSession.String = fullfile(SessionPath,WhichSession);
 
 
@@ -90,7 +96,11 @@ end
 num_Channel                 = N; 
 %bin                         = 25;                                          % Set binning for baseline distribution plots 
 % target zone has been entered 100 ms before (at bin 1100 here) 
-reference                   = [600 700; 700 800; 800 900; 900 1000; 1000 1100; 1100 1200; 1200 1300; 1300 1400; 1400 1500];  % It is important to use the same window size for each window you want to evaluate.
+%reference                   = [600 700; 700 800; 800 900; 900 1000; 1000 1100; 1100 1200; 1200 1300; 1300 1400; 1400 1500];  % It is important to use the same window size for each window you want to evaluate.
+%trying reduced windows - gives the same result:
+%reference                   = [800 900; 900 1000; 1000 1100; 1100 1200; 1200 1300; 1300 1400; 1400 1500];  % It is important to use the same window size for each window you want to evaluate.
+% trying even smaller window - final settings - 600ms (300 bins) around target zone entry on each side: 
+reference                   = [900 1000; 1000 1100; 1100 1200; 1200 1300; 1300 1400; 1400 1500];  % It is important to use the same window size for each window you want to evaluate.
 % bin 600 is when the trial is ON 
 reference_baseline          = [100 200; 200 300; 300 400; 400 500];        % You have to divide your baseline in frame windows equivalent to the ones you want to evaluate.
 reference_threshold         = [1 99; 5 95; 10 90];                         % Here you can feed possible thresholds you want to try. To get an idea of which threshold to pick, use 'Responsive_bouton_threshold_test_20221021.m'                                   
@@ -106,7 +116,7 @@ baseline_C(:,:) = squeeze(mean(AllTrialAlignedFRs(:,:,reference_baseline(3,1):re
 baseline_D(:,:) = squeeze(mean(AllTrialAlignedFRs(:,:,reference_baseline(4,1):reference_baseline(4,2)),3,'omitnan')); % 4th window
 
 baseline_all = [baseline_A baseline_B baseline_C baseline_D];              % These values are concatenated in one single matrix  
-baseline_all = baseline_all'; % to correct for how I organize things vs Diego - dim are channel x (tz x odor x 4 window)
+%baseline_all = baseline_all'; % to correct for how I organize things vs Diego - dim are channel x (tz x odor x 4 window)
 %% Baseline reference values for each channel.
                
 set_threshold                   = reference_threshold(threshold,:); 
@@ -153,53 +163,47 @@ end
 
 window_size = reference(1,2)-reference(1,1);% I shouldn't need the +1 - % here for me would be 100 bins = 200ms 
 
-% dataset_periods = NaN(window_size,size(dataset,2),size(dataset,3));
-% 
-% for nPeriods = 1:size(reference,1)
-%     dataset_periods(:,:,:,nPeriods)    = dataset(reference(nPeriods,1):reference(nPeriods,2),:,:);
-%     
-% end    
-% 
 % % Next I reduce the frame and trial dimensions to one by getting an average value
-% 
-% resptest_values(:,:)    = mean(squeeze(mean(dataset_periods,1,'omitnan')),2,'omitnan'); 
 
-% commenting for now because what we want is a matrix of dimensions unit x
+% what we want is a matrix of dimensions unit x
 % tested windows which contains average responses to one odor for that
 % specific window 
-%AllMeanCenterAlignedFRs (whichodor,whichunit,:)
+% AllMeanCenterAlignedFRs (whichodor,whichunit,:)
 
 nCategory = size(reference,1); %how many time windows to test 
 
 resptest_values = NaN(3,num_Channel,nCategory); % odor x unit x category
 for nPeriods = 1:size(reference,1)
     %calculate mean response for defined time window: 
-    resptest_values(3,num_Channel,nPeriods) = squeeze(mean(AllMeanCenterAlignedFRs (whichodor,whichunit,reference(nPeriods,1):reference(nPeriods,2)),3)); 
+    resptest_values(:,:,nPeriods) = squeeze(mean(AllMeanCenterAlignedFRs (:,:,reference(nPeriods,1):reference(nPeriods,2)),3)); 
 end 
-%% Identification of responsive boutons, both enhanced and suppressed - SINGLE THRESHOLD VALUES
+%% Identification of responsive boutons, both enhanced and suppressed for all odors - SINGLE THRESHOLD VALUES
 
-num_Category                = size(resptest_values,2);       % probably the number of tested windows                         
-resptest_index_single       = NaN(num_Channel,num_Category);
 
-% Identification of boutons showing enhanced or suppresed responses for each period
+num_Category = nCategory; % the number of tested windows  
+resptest_index_single       = NaN(3, num_Channel,num_Category); % odor x unit x time window
+
+% Identification of boutons showing enhanced or suppressed responses for each period
 for odor = 1:3
     for nCategory = 1:num_Category
         for nChannel = 1:num_Channel
             if resptest_values(odor,nChannel,nCategory) > baseline_Roi_prctl_high_single(nChannel,1)
-                resptest_index_single(nChannel,nCategory) = 1;
+                resptest_index_single(odor,nChannel,nCategory) = 1;
                 
-            elseif  resptest_values(nChannel,nCategory) < baseline_Roi_prctl_low_single(nChannel,1)
-                resptest_index_single(nChannel,nCategory) = 2;
+            elseif  resptest_values(odor, nChannel,nCategory) < baseline_Roi_prctl_low_single(nChannel,1)
+                resptest_index_single(odor,nChannel,nCategory) = 2;
                 
             else
-                resptest_index_single(nChannel,nCategory) = 0;
+                resptest_index_single(odor, nChannel,nCategory) = 0;
             end
         end
     end
 end
 
-% Classification of boutons by their responsiveness. Here I create an array
-% with num Channels x 2 columns. The first column is assignated with a 1 if
+
+% Classification of boutons by their responsiveness. 
+% Here I create an array with num Channels x 2 columns. 
+% The first column is assignated with a 1 if
 % I found at least one enhanced response in one of the periods of each 
 % channel row. The second with a 2 if I found at least one suppressed 
 % response in each channel row. If no enhanced or suppressed response is 
@@ -211,24 +215,47 @@ end
 % a complex/dual response channel a 1 + 2 = 3; 
 % an unresponsive channel a 0 + 0 = 0.
 
-resptest_response_single    = NaN(num_Channel,2);
+resptest_response_single    = NaN(3,num_Channel,2); %odor x unit x enh/inh
 
-for nChannel = 1:num_Channel
-
-    if find(resptest_index_single(nChannel,:) == 1,1,'first')
-        resptest_response_single(nChannel,1) = 1;
-    else
-        resptest_response_single(nChannel,1) = 0;
+for odor = 1:3
+    for nChannel = 1:num_Channel
+        
+        if find(resptest_index_single(odor,nChannel,:) == 1,1,'first')
+            resptest_response_single(odor,nChannel,1) = 1;
+        else
+            resptest_response_single(odor,nChannel,1) = 0;
+        end
+        
+        if find(resptest_index_single(odor,nChannel,:) == 2,1,'first')
+            resptest_response_single(odor,nChannel,2) = 2;
+        else
+            resptest_response_single(odor,nChannel,2) = 0;
+        end
     end
+end
 
-    if find(resptest_index_single(nChannel,:) == 2,1,'first')
-        resptest_response_single(nChannel,2) = 2;
-    else
-        resptest_response_single(nChannel,2) = 0;
+%% Making response matrix for responsiveness to any odor
+resptest_response_all    = NaN(num_Channel,2); %unit x enh/inh
+
+for odor = 1:3
+    for nChannel = 1:num_Channel
+        
+        if find(resptest_response_single(odor,nChannel,:) == 1,1,'first')
+            resptest_response_all(odor,nChannel,1) = 1;
+        else
+            resptest_response_all(odor,nChannel,1) = 0;
+        end
+        
+        if find(resptest_response_single(odor,nChannel,:) == 2,1,'first')
+            resptest_response_single(odor,nChannel,2) = 2;
+        else
+            resptest_response_single(odor,nChannel,2) = 0;
+        end
     end
-end    
+end
 
-resptest_response_class(:,1) = resptest_response_single(:,1) + resptest_response_single(:,2);
+
+%resptest_response_class(:,1) = resptest_response_single(:,1) + resptest_response_single(:,2);
         
 %% Percentage analysis of classified channels
 

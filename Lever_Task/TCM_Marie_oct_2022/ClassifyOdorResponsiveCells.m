@@ -1,22 +1,13 @@
-%Responsive_Cells_O3_20221022
+function [channels_perc] = ClassifyOdorResponsiveCells (SessionPath, toplot)
 
-%% USER - select which mouse open loop session to analyze
-mousename = 'O3';
+% written by MD
 
-% [WhichSession, SessionPath] = uigetfile(); % to be used later for more flexibility
-switch mousename
-    case 'O3'
-        WhichSession = 'O3_20211005_r0_processed';
-        SessionPath = 'C:\Users\Marie\Documents\data\Smellocator\Processed\Behavior\O3';
-    case 'O1'
-        WhichSession = 'O1_20211012_r0_processed.mat';
-        SessionPath = 'C:\Users\Marie\Documents\data\Smellocator\Processed\Behavior\O1';
-end
-handles.WhereSession.String = fullfile(SessionPath,WhichSession);
+%handles.WhereSession.String = fullfile(SessionPath,WhichSession);
 
-
+perc_plots = toplot;
 %% get the data loaded
-MySession = handles.WhereSession.String;
+%MySession = handles.WhereSession.String;
+MySession = SessionPath;
 [TracesOut, ColNames, handles.TrialInfo, SingleUnits, TTLs, ...
     ReplayTTLs, SampleRate, TimestampAdjuster, PassiveTracesOut, StartStopIdx, OpenLoop] = ...
     LoadProcessedDataSession(MySession);  % loads relevant variables
@@ -58,7 +49,7 @@ N = size(SingleUnits,2);
 MyUnits = (1:N);
 
 %% Getting average responses for each odor for air and odor centered period
-window_length = 3200; %bin size is 2ms so multiple this number by 2 to get actual time in ms 
+window_length = 1550; %bin size is 2ms so multiple this number by 2 to get actual time in ms % used to be 3200 but changed to work across mice
 
 AllMeanCenterAlignedFRs = zeros(3, N, window_length); % odor x unit x window length 
 AllMeanTrialAlignedFRs = zeros(3, N, window_length); % odor x unit x window length 
@@ -69,6 +60,9 @@ for whichodor = 1:3
     for whichunit = 1:N
         AlignTo = 5; % to get aligned to TZ entry 
         [AlignedFRs, AlignedRawSpikeCounts] = AlignedFRtoEvent(handles, whichunit, whichodor, AlignTo); %dim are TZ x time 
+        if length(AlignedFRs) < window_length % in case the vector is too short to be stored, add zeros to make it the right length
+            AlignedFRs(:,window_length) = 0; 
+        end 
         %store each tz responses individually:
         AllCenterAlignedFRs(whichunit,whichodor,1:12,1:window_length) = AlignedFRs(:,1:window_length); 
         %take the mean across TZ:
@@ -79,6 +73,9 @@ for whichodor = 1:3
         
         AlignTo = 1; %Trial ON so I can get FR during ITI
         [TrialAlignedFRs, TrialAlignedRawSpikeCounts] = AlignedFRtoEvent(handles, whichunit, whichodor, AlignTo);
+        if length(TrialAlignedFRs) < window_length % in case the vector is too short to be stored, add zeros to make it the right length
+            TrialAlignedFRs(:,window_length) = 0; 
+        end 
         %store each tz responses individually:
         AllTrialAlignedFRs(whichunit,whichodor,1:12,1:window_length) = TrialAlignedFRs(:,1:window_length); 
         %take the mean across TZ:
@@ -108,8 +105,8 @@ threshold                   = 1;                                           % Pic
 
 %% Frame window averages of baseline periods. 
 % Here I divided the baseline in 4 periods with a window frame size equivalent to the ones I use for the response period 
-AllTrialAlignedFRs = reshape(AllTrialAlignedFRs, [N,36,3200]); %unit x (odor x tz) x time
-
+AllTrialAlignedFRs = reshape(AllTrialAlignedFRs, [N,36,window_length]); %unit x (odor x tz) x time
+ 
 baseline_A(:,:) = squeeze(mean(AllTrialAlignedFRs(:,:,reference_baseline(1,1):reference_baseline(1,2)),3,'omitnan')); % 1st window
 baseline_B(:,:) = squeeze(mean(AllTrialAlignedFRs(:,:,reference_baseline(2,1):reference_baseline(2,2)),3,'omitnan')); % 2nd window
 baseline_C(:,:) = squeeze(mean(AllTrialAlignedFRs(:,:,reference_baseline(3,1):reference_baseline(3,2)),3,'omitnan')); % 3rd window
@@ -258,7 +255,7 @@ end
 resptest_response_class(:,1) = resptest_response_all(:,1) + resptest_response_all(:,2);
         
 %% Percentage analysis of classified channels
-perc_plots = 1;
+%perc_plots = 1;
 
 switch perc_plots
     case 1
@@ -280,7 +277,7 @@ switch perc_plots
         resp_channels_perc(1,2) = channels_s*100/resp_channels;
         resp_channels_perc(1,3) = channels_m*100/resp_channels;
 
-        f3 = figure(3);
+        f3 = figure();
             subplot(1,2,1);
                 bar(channels_perc(1,1:2))
                     box off;
@@ -289,6 +286,7 @@ switch perc_plots
                     ylabel('Units (%)')
                     ylim([0 100]);
                     title('Percentage of responsive units');
+                    box off
             subplot(1,2,2);
                 bar(resp_channels_perc(1,1:3))
                     box off;
@@ -297,6 +295,7 @@ switch perc_plots
                     ylabel('Responsive units (%)')
                     ylim([0 100]);
                     title('Percentage of classification of responses');
+                    box off
     case 0    
         f3 = 0;
 end    
@@ -400,4 +399,4 @@ end
 %x = size(allTrials,1);
 
 end
-    
+end

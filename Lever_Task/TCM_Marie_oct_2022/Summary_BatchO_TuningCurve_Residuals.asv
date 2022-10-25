@@ -1,7 +1,7 @@
 % Summary_BatchO_TuningCurve_Residuals
 % written by MD
 
-mousename = {'O1', 'O2', 'O3', 'O7', 'O8', 'O9'}; % dropping off O5 since noisy ephys during both open loop sessions
+mousename = {'O1', 'O2', 'O3', 'O7', 'O8', 'O9'}; % dropping off O5 since noisy during both 
 
 SessionPath = {'O1/O1_20211012_r0_processed.mat', 'O2/O2_20211011_r0_processed.mat',...
     'O3/O3_20211005_r0_processed.mat', 'O7/O7_20220630_r0_processed.mat', ...
@@ -34,17 +34,16 @@ end
 
 %% plotting 
 %%
-figure() %number of units per mouse
+figure(1) %number of units per mouse
 X = categorical(mousename);
 X = reordercats(X,mousename);
 Y1 = UnitsNumber;
 bar(X,Y1, 'FaceColor', Plot_Colors('k'))
-xlabel('mouse id')
+xlabel('mouse name')
 ylabel('# units') 
 set(gca,'TickDir','out');
-box off
 %%
-figure()%modulated 99% cutoff per mouse
+figure(2)%modulated 99% cutoff per mouse
 
 Y2 = [];
 chosen_cutoff = 2;
@@ -62,8 +61,6 @@ ylabel('% unit modulated - 97%cutoff')
 set(gca,'TickDir','out');
 lgd = legend('CL-CL','CL-AR','CL-PR', 'AR-PR');
 lgd.Location = 'northeastoutside';
-box off
-
 
 
 %for whatcomp = 2:4 %CL/AR; CL/PR; AR/PR
@@ -71,10 +68,9 @@ box off
     
 %end
 %%
-figure() %CL/PR - modulated with respect to number of units
+figure(3) %CL/PR - modulated with respect to number of units
 
-scatter(Y1, percentmodulated (:,chosen_cutoff,3), 'o', 'k','filled','LineWidth',2)
+scatter(Y1, percentmodulated (:,chosen_cutoff,3), 'o', 'k')
 refline
 xlabel('# of units')
-ylabel('% unit modulated during passive replay')  
-box off
+ylabel('% unit modulated during passive replay')    
