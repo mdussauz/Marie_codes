@@ -15,7 +15,22 @@
 %SessionInfo = ReadSessionDatatable(FilePath, FileName); 
 SessionInfo = ReadSessionDatatable(); 
 
-% make the spike structure 
-[allcluster] = MakeSpikeStucture(SessionInfo, 'AON', 'all');
+% make the spike structure - specify AON or APC
+% allclusters contains both conc and id exp 
+
+[allclusters] = MakeSpikeStucture(SessionInfo, 'AON', 'all');
+%[allclusters] = MakeSpikeStucture(SessionInfo, 'APC', 'all');
 
 %% If exist, load spike structure 
+
+%% Compute PSTH 5D for dPCA
+[PSTH] = ComputePSTHMultiD_new(allclusters, "Conc",5); 
+
+%% Smooth PSTH
+[smoothPSTH] = SmoothPSTH_new(PSTH, 50, "Conc");
+
+%% Plotting Conc responses
+ plotConcResponseMatrix_new(smoothPSTH);
+
+%% Run dPCA
+[W] = RundPCA(smoothPSTH);

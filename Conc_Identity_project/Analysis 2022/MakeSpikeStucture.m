@@ -1,4 +1,4 @@
-function [allcluster] = MakeSpikeStucture(SessionInfo,BrainRegion, Mouse)
+function [allclusters] = MakeSpikeStucture(SessionInfo,BrainRegion, Mouse)
 % -- written by MD
 % -- create structure array for all neurons all sessions all mice
 % user must specify what to extract: 
@@ -26,8 +26,12 @@ switch AnalysisChoice
 end
 
 if strcmp(computer, 'PCWIN64')
+    %addpath(genpath('Z:\mdussauz\PhotonCerber_Stimuli_on_server'))
     addpath(genpath('Z:\mdussauz\PhotonCerber_Stimuli_on_server'))
-    addpath(genpath('Z:\mdussauz\ConcId\Sorted'))
+    addpath(genpath('C:\Users\Marie\Documents\data\PhotonCerber_Stimuli_on_server'))
+    
+    KSpath = 'Z:\mdussauz\ephysdata\Conc_id_exp'; 
+    KSsortedpath = 'Z:\mdussauz\ConcId\Sorted'; 
 else
     addpath(genpath('/mnt/data/PhotonCerber_Stimuli'))
 end
@@ -35,33 +39,45 @@ end
 
 allclusters = struct('id',[],'spikecount',[],'spikes',[], 'stimulus', []); %initiate
 for i = 1: length(myKsDir)
-    
-    [StimTime, StimList, Nrepeats] = ReadStimFile(stimfilename{i});
+    i
+    stimfilename{i}
+    [StimTime, StimList, Nrepeats] = ReadStimFile([stimfilename{i}, '.txt']);
     NOdors = numel(unique(StimList));
     NTrials= numel(StimList);
     
-    filename = fullfile(myKsDir{i},'all_channels.events');
-    [data, timestamps, info] = load_open_ephys_data(filename); % data has channel IDs
+    filenameKS = fullfile(KSpath, myKsDir{i},'Record Node 106');
+    filenameKS
+    %[data, timestamps, info] = load_open_ephys_data(filenameKS); % data has channel IDs
+    [data, timestamps, info] = load_open_ephys_data(fullfile(filenameKS,'all_channels.events')); % data has channel IDs
     
     % adjust for clock offset between open ephys and kilosort
-    [offset] = AdjustClockOffset(myKsDir{i});
+    %[offset] = AdjustClockOffset(myKsDir{i});
+    [offset] = AdjustClockOffset(filenameKS);
     offset = offset/sampleRate;
     
     
     %% Get Events and correct for ephys offset
-    [Events] = ParseOpenEphysEvents(filename);
+    [Events] = ParseOpenEphysEvents(fullfile(filenameKS,'all_channels.events'));
     % trial events are in Channel0, odor events are in Channel1
     
     TrialTimestamps = [Events.Channel0.On Events.Channel0.Off];
     TrialTimestamps(1,:) = []; % delete first entry - just an empty trigger
     OdorTimestamps = [Events.Channel1.On Events.Channel1.Off];
     
+    % should i correct for offset???
     TrialTimestamps = TrialTimestamps - offset; %adjust for offset
     OdorTimestamps = OdorTimestamps - offset; % adjust for offset
     
+    %% In new experiment there seems to be an extra trial and odor on/off
+    if OdorTimestamps(1,2) - OdorTimestamps(1,1) < 2
+        TrialTimestamps(1,:) = [];
+        OdorTimestamps(1,:) = [];
+    end
+        
     %% Load data from kilosort/phy
-    
-    sp = loadKSdir(myKsDir{i});
+    filenameKSsorted = fullfile(KSsortedpath, myKsDir{i}); 
+    %sp = loadKSdir(myKsDir{i});
+    sp = loadKSdir(filenameKSsorted);
     
     %% Number of good units
     

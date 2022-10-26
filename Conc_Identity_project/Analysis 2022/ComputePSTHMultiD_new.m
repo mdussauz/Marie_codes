@@ -1,4 +1,4 @@
-function [PSTH] = ComputePSTHMultiD(allclusters, ExpType,Dim)
+function [PSTH] = ComputePSTHMultiD_new(allclusters, ExpType,Dim)
 %written by MD
 % inputs:
 % allclusters = structure array produced by dPCA prep code
@@ -11,23 +11,45 @@ function [PSTH] = ComputePSTHMultiD(allclusters, ExpType,Dim)
 % Neurons x Stimuli x time x Repeats -  for both conc series and 16 odors
 % exp 
 
-goodcluster = allclusters;
-firstbin = -10;
-lastbin = 10;
-step = 0.001; %timebin for PSTH should be 1 ms 
-tbins = firstbin:step:lastbin;
-Nneurons= length(goodcluster); 
-
+%new experiment structure is 6s pre stim; 2s stim; 2s post stim
+ 
 if ExpType == "Conc"
     %NTrials = 100;
     NOdors = 20;
-	timepoints = 20000; 
+	timepoints = 10000; 
+    
+    %keeping only spikes from conc exp:
+    goodcluster = struct('id',[],'spikecount',[],'spikes',[], 'stimulus', []); %initiate 
+    for cluster = 1:length(allclusters)
+        if length(allclusters(cluster).spikes) == 140 %number of trials in conc exp
+        goodcluster = [goodcluster,allclusters(cluster)];
+        goodcluster( all( cell2mat( arrayfun( @(x) structfun( @isempty, x ),...
+            goodcluster, 'UniformOutput', false ) ), 1 ) ) = []; %remove empty lines
+        end
+    end 
+    
 elseif ExpType == "Id" 
     %NTrials = 80;
     NOdors = 16;
-    timepoints = 20000;%in previous version of this exp it was shorter    
-end
+    timepoints = 10000;%in previous version of this exp it was shorter   
     
+    %keeping only spikes from id exp:
+    goodcluster = struct('id',[],'spikecount',[],'spikes',[], 'stimulus', []); %initiate 
+    for cluster = 1:length(allclusters)
+        if length(allclusters(cluster).spikes) == 112 %number of trials in id exp
+        goodcluster = allclusters(cluster);
+        goodcluster( all( cell2mat( arrayfun( @(x) structfun( @isempty, x ),...
+            goodcluster, 'UniformOutput', false ) ), 1 ) ) = []; %remove empty lines
+        end
+    end 
+end
+
+%% Defining common variables 
+firstbin = -6;
+lastbin = 4;
+step = 0.001; %timebin for PSTH should be 1 ms 
+tbins = firstbin:step:lastbin;
+Nneurons= length(goodcluster); 
 %%
 switch Dim
 %%    
@@ -35,7 +57,7 @@ switch Dim
 
     NId = 5; % nber of odor id 
     NConc = 4; % nber of od conc
-    NRep = 5; % nber of repeats %will need to not be hardcoded
+    NRep = length(find(goodcluster(1).stimulus==1)); % nber of repeats
     PSTH5D = zeros(Nneurons, NId, NConc ,timepoints, NRep); %initialize 
 
     Trial.Id(1,:) = [1 6 11 16]; %Odor 1
@@ -82,7 +104,7 @@ switch Dim
 
            for j = 1:NRep % for j = 1:numel(reps) %repeat number % have to bypass that when >5
         SpikeTimes = goodcluster(whichcluster).spikes{1, reps(j)};
-        myspikecount = histcounts(SpikeTimes, tbins); %partitions the spiketimes into bins, and returns the count in each bin
+        myspikecount = histcounts(SpikeTimes, tbins);
         PSTH5D(whichcluster,x,y,:,j) = [myspikecount];
            end
         end 
@@ -91,14 +113,14 @@ switch Dim
 %%
     case 4 % Compute 4-D PSTH as Neurons X Nber of Odors X time (in ms) X Repeats 
 
-    NRep = 5; % nber of repeats %will need to not be hardcoded
+    NRep = length(find(goodcluster(1).stimulus==1)); % nber of repeats
     PSTH4D = zeros(Nneurons, NOdors ,timepoints, NRep); %initialize 
 
 
     for whichcluster = 1:length(goodcluster)
         stim = goodcluster(whichcluster).stimulus;
         clear spikecount
-        for i = 1:NOdors %for each odor % 20 for id/conc exp or 16 for 16 od exp
+        for i = 1:NOdors %for each odor % 20 for id/conc exp
             clear spikecount 
             reps = find(stim==i); % get indices of all repeats for each odor  
                               % ~trial number of each rep for one
