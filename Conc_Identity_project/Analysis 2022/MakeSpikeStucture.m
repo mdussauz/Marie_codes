@@ -59,20 +59,23 @@ for i = 1: length(myKsDir)
     %% Get Events and correct for ephys offset
     [Events] = ParseOpenEphysEvents(fullfile(filenameKS,'all_channels.events'));
     % trial events are in Channel0, odor events are in Channel1
-    
+
     TrialTimestamps = [Events.Channel0.On Events.Channel0.Off];
-    TrialTimestamps(1,:) = []; % delete first entry - just an empty trigger
+    % delete first entry - just an empty trigger
+    TrialTimestamps(1:2,:) = [];
+    
     OdorTimestamps = [Events.Channel1.On Events.Channel1.Off];
+    OdorTimestamps(1,:) = [];
     
     % should i correct for offset???
-    TrialTimestamps = TrialTimestamps - offset; %adjust for offset
-    OdorTimestamps = OdorTimestamps - offset; % adjust for offset
+%      TrialTimestamps = TrialTimestamps - offset; %adjust for offset
+%      OdorTimestamps = OdorTimestamps - offset; % adjust for offset
     
-    %% In new experiment there seems to be an extra trial and odor on/off
-    if OdorTimestamps(1,2) - OdorTimestamps(1,1) < 2
-        TrialTimestamps(1,:) = [];
-        OdorTimestamps(1,:) = [];
-    end
+%     %% In new experiment there seems to be an extra trial and odor on/off
+%     if OdorTimestamps(1,2) - OdorTimestamps(1,1) < 2
+%         TrialTimestamps(1,:) = [];
+%         OdorTimestamps(1,:) = [];
+%     end
         
     %% Load data from kilosort/phy
     filenameKSsorted = fullfile(KSsortedpath, myKsDir{i}); 
@@ -95,8 +98,8 @@ for i = 1: length(myKsDir)
             
             for mytrial = 1:NTrials
                 %TrialSpikes = [];
-                tstart = TrialTimestamps(mytrial,1);
-                tstop = TrialTimestamps(mytrial,2);
+                tstart = TrialTimestamps(mytrial,1)-15;
+                tstop = TrialTimestamps(mytrial,2)+15;
                 odorstart = OdorTimestamps(mytrial,1);
                 mygoodspikes = allgoodspikes(find(allgoodspikes>=tstart & allgoodspikes<=tstop));
                 mygoodspikes = mygoodspikes - odorstart; % align to every odor start!!!

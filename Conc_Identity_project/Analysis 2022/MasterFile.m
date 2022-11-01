@@ -24,10 +24,12 @@ SessionInfo = ReadSessionDatatable();
 %% If exist, load spike structure 
 
 %% Compute PSTH 5D for dPCA
-[PSTH] = ComputePSTHMultiD_new(allclusters, "Conc",5); 
+%[goodcluster,PSTH] = ComputePSTHMultiD_new(allclusters, "Conc",5); 
+[goodcluster,PSTH] = ComputePSTHMultiD_new(allclusters, "Id",4); 
 
 %% Smooth PSTH
-[smoothPSTH] = SmoothPSTH_new(PSTH, 50, "Conc");
+%[smoothPSTH] = SmoothPSTH_new(PSTH, 50, "Conc");
+[smoothPSTH] = SmoothPSTH_new(PSTH, 100, "Id");
 
 %% Plotting Conc responses
  plotConcResponseMatrix_new(smoothPSTH);

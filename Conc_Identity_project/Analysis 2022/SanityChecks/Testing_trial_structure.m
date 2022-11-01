@@ -16,17 +16,17 @@ offset = offset/sampleRate;
     % trial events are in Channel0, odor events are in Channel1
     
     TrialTimestamps = [Events.Channel0.On Events.Channel0.Off];
-    TrialTimestamps(1,:) = []; % delete first entry - just an empty trigger
+    %TrialTimestamps(1,:) = []; % delete first entry - just an empty trigger
     OdorTimestamps = [Events.Channel1.On Events.Channel1.Off];
     
 
     
-    TrialTimestamps = TrialTimestamps - offset; %adjust for offset
-    OdorTimestamps = OdorTimestamps - offset; % adjust for offset
+%     TrialTimestamps = TrialTimestamps - offset; %adjust for offset
+%     OdorTimestamps = OdorTimestamps - offset; % adjust for offset
     
 %% Conclusion
 % Odortimestamps(1) happens before trial timestamps(1,1)
-if OdorTimestamps(1,2) - OdorTimestamps(1,1) < 2
-    TrialTimestamps(1,:) = [];
-    OdorTimestamps(1,:) = [];
-end
+% if OdorTimestamps(1,2) - OdorTimestamps(1,1) < 2
+%     TrialTimestamps(1,:) = [];
+%     OdorTimestamps(1,:) = [];
+% end

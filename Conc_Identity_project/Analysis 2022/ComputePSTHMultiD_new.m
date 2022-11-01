@@ -1,4 +1,4 @@
-function [PSTH] = ComputePSTHMultiD_new(allclusters, ExpType,Dim)
+function [goodcluster, PSTH] = ComputePSTHMultiD_new(allclusters, ExpType,Dim)
 %written by MD
 % inputs:
 % allclusters = structure array produced by dPCA prep code
@@ -16,7 +16,7 @@ function [PSTH] = ComputePSTHMultiD_new(allclusters, ExpType,Dim)
 if ExpType == "Conc"
     %NTrials = 100;
     NOdors = 20;
-	timepoints = 10000; 
+	timepoints = 40000; 
     
     %keeping only spikes from conc exp:
     goodcluster = struct('id',[],'spikecount',[],'spikes',[], 'stimulus', []); %initiate 
@@ -31,13 +31,13 @@ if ExpType == "Conc"
 elseif ExpType == "Id" 
     %NTrials = 80;
     NOdors = 16;
-    timepoints = 10000;%in previous version of this exp it was shorter   
+    timepoints = 40000;%in previous version of this exp it was shorter   
     
     %keeping only spikes from id exp:
     goodcluster = struct('id',[],'spikecount',[],'spikes',[], 'stimulus', []); %initiate 
     for cluster = 1:length(allclusters)
         if length(allclusters(cluster).spikes) == 112 %number of trials in id exp
-        goodcluster = allclusters(cluster);
+        goodcluster = [goodcluster,allclusters(cluster)];
         goodcluster( all( cell2mat( arrayfun( @(x) structfun( @isempty, x ),...
             goodcluster, 'UniformOutput', false ) ), 1 ) ) = []; %remove empty lines
         end
@@ -45,8 +45,8 @@ elseif ExpType == "Id"
 end
 
 %% Defining common variables 
-firstbin = -6;
-lastbin = 4;
+firstbin = -21;
+lastbin = 19;
 step = 0.001; %timebin for PSTH should be 1 ms 
 tbins = firstbin:step:lastbin;
 Nneurons= length(goodcluster); 
@@ -59,17 +59,18 @@ switch Dim
     NConc = 4; % nber of od conc
     NRep = length(find(goodcluster(1).stimulus==1)); % nber of repeats
     PSTH5D = zeros(Nneurons, NId, NConc ,timepoints, NRep); %initialize 
-
+    
+    %These assignements have changed in new experiments 
     Trial.Id(1,:) = [1 6 11 16]; %Odor 1
     Trial.Id(2,:) = [2 7 12 17]; %Odor 2
     Trial.Id(3,:) = [3 8 13 18]; %Odor 3
     Trial.Id(4,:) = [4 9 14 19]; %Odor 4
-    Trial.Id(5,:) = [5 10 15 20]; % Odor 5
+    Trial.Id(5,:) = [5 10 15 20]; % Odor 5 - oil 
 
     Trial.Conc(1,:) = [1 2 3 4 5];% concentration 10^-4 
-    Trial.Conc(2,:) = [6 7 8 9 10];% concentration 10^-3 
-    Trial.Conc(3,:) = [11 12 13 14 15];% concentration 10^-2 
-    Trial.Conc(4,:) = [16 17 18 19 20];% concentration 10^-1 
+    Trial.Conc(2,:) = [6 7 8 9 10];% concentration 3.4 10^-3 
+    Trial.Conc(3,:) = [11 12 13 14 15];% concentration 6.7 10^-3 
+    Trial.Conc(4,:) = [16 17 18 19 20];% concentration 10^-2 
 
     for whichcluster = 1:length(goodcluster)
     stim = goodcluster(whichcluster).stimulus;
