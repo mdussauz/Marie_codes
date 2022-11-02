@@ -53,7 +53,7 @@ for i = 1: length(myKsDir)
     % adjust for clock offset between open ephys and kilosort
     %[offset] = AdjustClockOffset(myKsDir{i});
     [offset] = AdjustClockOffset(filenameKS);
-    offset = offset/sampleRate;
+    %offset = offset/sampleRate;
     
     
     %% Get Events and correct for ephys offset
@@ -68,8 +68,8 @@ for i = 1: length(myKsDir)
     OdorTimestamps(1,:) = [];
     
     % should i correct for offset???
-%      TrialTimestamps = TrialTimestamps - offset; %adjust for offset
-%      OdorTimestamps = OdorTimestamps - offset; % adjust for offset
+      TrialTimestamps = TrialTimestamps - offset; %adjust for offset
+      OdorTimestamps = OdorTimestamps - offset; % adjust for offset
     
 %     %% In new experiment there seems to be an extra trial and odor on/off
 %     if OdorTimestamps(1,2) - OdorTimestamps(1,1) < 2
