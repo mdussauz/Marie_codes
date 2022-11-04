@@ -25,7 +25,7 @@ for whatsmell = 1:5
         xline(2,'k--');
         clear X; clear Y;
     end
-    colormap(parula);
+    colormap(flipud(gray));
     title( ['Odor',  num2str(whatsmell)])
     
 end

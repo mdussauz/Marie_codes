@@ -12,23 +12,17 @@ function [smoothPSTH] = SmoothPSTH_new(PSTH, timewindow, ExpType)
 % Neurons x Stimuli x time x Repeats if input was PSTH 4D
 
 Nneurons= size(PSTH,1);
-clusterNum = 1:Nneurons;
 t_wid = timewindow;  % width of kernel (in ms)
 taxis = -(t_wid*5):(t_wid*5);  % make a time axis of 1000 ms for a window of 100 ms
 gauss_kernel = normpdf(taxis, 0, t_wid);
 gauss_kernel = gauss_kernel ./ sum(gauss_kernel);
 
 if ndims(PSTH) == 5 && ExpType == "Conc" % conc exp
-    NTrials = 140;
     NOdors = 20;
-	%timepoints = 20000; 
 elseif ndims(PSTH) == 4 && ExpType == "Conc" % conc exp and 4d PSTH matrix
-    NTrials = 140;
     NOdors = 20;
 elseif ndims(PSTH) == 4 && ExpType == "Id"  % 16 odors exp
-    NTrials = 112;
-    NOdors = 16;
-    %timepoints = 20000;%in previous version of this exp it was shorter    
+    NOdors = 16;   
 end
    
 
@@ -40,9 +34,10 @@ switch ndims(PSTH)
     NId = size(PSTH,2); % nber of odor id 
     NConc = size(PSTH,3); % nber of od conc
     NRep = size(PSTH,5); % nber of repeats 
-    
-    for c = 1:length(clusterNum) % loop through each unit
-        clusterIdx = clusterNum(c);
+    TrialTime = size(PSTH,4); % total trial time length
+    smoothPSTH = zeros(Nneurons,NId,NConc,TrialTime,NRep);
+    tic
+    for clusterIdx = 1:Nneurons % loop through each unit
         for x = 1:NId %for each odor identity
             for y = 1:NConc % for each concentration
                 for j = 1:NRep % for j = 1:numel(reps) %repeat number % have to bypass that when >5
@@ -53,13 +48,16 @@ switch ndims(PSTH)
             end
         end 
     end
+    toc
 %%
     case 4 % Compute 4-D PSTH as Neurons X Nber of Stimuli X time (in ms) X Repeats 
-
-    NRep = size(PSTH,5); % nber of repeats  % nber of repeats 
     
-    for c = 1:length(clusterNum) % loop through each unit
-        clusterIdx = clusterNum(c);
+    NId = size(PSTH,2);
+    NRep = size(PSTH,4); % nber of repeats  % nber of repeats 
+    TrialTime = size(PSTH,3); % total trial time length
+    smoothPSTH = zeros(Nneurons,NId,TrialTime,NRep);
+    
+    for clusterIdx = 1:Nneurons % loop through each unit
         for x = 1:NOdors %for each odor stimulus
             for j = 1:NRep % for j = 1:numel(reps) %repeat number % have to bypass that when >5
                 tempPSTH = squeeze(PSTH(clusterIdx,x,:,j)); % for one cluster, all times for one type 

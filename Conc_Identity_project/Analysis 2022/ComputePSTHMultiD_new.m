@@ -14,7 +14,6 @@ function [goodcluster, PSTH] = ComputePSTHMultiD_new(allclusters, ExpType,Dim)
 %new experiment structure is 6s pre stim; 2s stim; 2s post stim
  
 if ExpType == "Conc"
-    %NTrials = 100;
     NOdors = 20;
 	timepoints = 10000; 
     
@@ -29,7 +28,6 @@ if ExpType == "Conc"
     end 
     
 elseif ExpType == "Id" 
-    %NTrials = 80;
     NOdors = 16;
     timepoints = 10000;%in previous version of this exp it was shorter   
     

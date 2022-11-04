@@ -18,8 +18,8 @@ SessionInfo = ReadSessionDatatable();
 % make the spike structure - specify AON or APC
 % allclusters contains both conc and id exp 
 
-[allclusters] = MakeSpikeStucture(SessionInfo, 'AON', 'all');
-%[allclusters] = MakeSpikeStucture(SessionInfo, 'APC', 'all');
+%[allclusters] = MakeSpikeStucture(SessionInfo, 'AON', 'all');
+[allclusters] = MakeSpikeStucture(SessionInfo, 'APC', 'all');
 
 %% If exist, load spike structure 
 

@@ -17,12 +17,12 @@ function []= plotZScored16OdorMatrix_new(smoothPSTH)
 %-------------------------------------------------
 firingRatesAverage = nanmean(smoothPSTH,4);
 
-mu = squeeze(mean(firingRatesAverage(:,:,17000:21000),[2 3]));
-sigma = squeeze(std(firingRatesAverage(:,:,17000:21000),0,[2 3]));
+mu = squeeze(mean(firingRatesAverage(:,:,2000:6000),[2 3]));
+sigma = squeeze(std(firingRatesAverage(:,:,2000:6000),0,[2 3]));
 z_score = (firingRatesAverage(:,:,:) - mu) ./ sigma;
 
-firstbin = -21;
-lastbin = 19;
+firstbin = -6;
+lastbin = 4;
 
 figCount = 1;
 subplotcount = 1;
