@@ -9,7 +9,12 @@ function SessionInfo = ReadSessionDatatable(FilePath, FileName)
 % BrainRegion: recorded in AON or APC
 
 if nargin < 1
-  FilePath = 'C:\Users\Marie\Desktop';
+    if strcmp(computer,'PCWIN64')
+        FilePath = 'C:\Users\Marie\Desktop';
+    else
+        FilePath = 'opt/Marie_codes/Conc_Identity_project/Analysis 2022';
+    end
+  
   FileName = 'Final_Table_Conc_Id_Analysis.xlsx'; 
 end
 

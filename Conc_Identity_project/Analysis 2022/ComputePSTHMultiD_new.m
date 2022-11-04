@@ -16,7 +16,7 @@ function [goodcluster, PSTH] = ComputePSTHMultiD_new(allclusters, ExpType,Dim)
 if ExpType == "Conc"
     %NTrials = 100;
     NOdors = 20;
-	timepoints = 40000; 
+	timepoints = 10000; 
     
     %keeping only spikes from conc exp:
     goodcluster = struct('id',[],'spikecount',[],'spikes',[], 'stimulus', []); %initiate 
@@ -31,7 +31,7 @@ if ExpType == "Conc"
 elseif ExpType == "Id" 
     %NTrials = 80;
     NOdors = 16;
-    timepoints = 40000;%in previous version of this exp it was shorter   
+    timepoints = 10000;%in previous version of this exp it was shorter   
     
     %keeping only spikes from id exp:
     goodcluster = struct('id',[],'spikecount',[],'spikes',[], 'stimulus', []); %initiate 
@@ -45,8 +45,8 @@ elseif ExpType == "Id"
 end
 
 %% Defining common variables 
-firstbin = -21;
-lastbin = 19;
+firstbin = -6;
+lastbin = 4;
 step = 0.001; %timebin for PSTH should be 1 ms 
 tbins = firstbin:step:lastbin;
 Nneurons= length(goodcluster); 
