@@ -6,6 +6,8 @@ ChosenUnits = [15 17 18]; % 28 63 56]; %MyUnits = [8 35 28 55 39];
 %% DataExtraction
 if strcmp(computer, 'MACI64')
     datapath = '/Users/Priyanka/Desktop/LABWORK_II/Data/Smellocator/Processed/Behavior/';
+elseif strcmp(computer,'PCWIN64')
+    datapath = 'C:\Users\Marie\Documents\data\Smellocator\Processed\Behavior';
 else
     datapath = '/mnt/data/Processed/Behavior/';
 end
@@ -24,7 +26,7 @@ TrialInfo.TargetEntry = NaN*TrialInfo.Odor;
      size(TrialInfo.TrialID,2),TrialInfo,MySession);
 % 
 % 
-% whichOdor = 1;
+ whichOdor = 1; % can only work if this specific mouse has perturbation on that odor
  AlignTo = 6; % perturbation start
  MyColors1 = brewermap(15,'Greys');
 % H = figure;
@@ -157,34 +159,31 @@ OdorONPeriod = ceil(OdorONPeriod*SampleRate);
 % 1 - Trial ON, 2 - Odor ON, 3 - Trial OFF, 4 - Reward, 5 - 1st TZ entry, 
 % 6 - Perturbation Start
 %%
-mywin = 1000; % in m
-stepsize = 1000/SampleRate;
-
-
+mywin = 1000; % in ms - to be defined by user
+stepsize = 1000/SampleRate; % method used to account for potential sampledrop
 
 for i = 1:size(SingleUnits,2)
     % get spike counts aligned to odor ON
-    [~, AlignedFRs, BinOffset, AlignedPerturbationFRs, RawSpikeCounts] = ...
+    [~, AlignedFRs, BinOffset, AlignedPerturbationFRs, RawSpikeCounts] = ... 
         PlotFullSession(-i, whichOdor, AlignedSpikes, Events, TrialInfo, 2);
-    % count spikes in a 500 ms bin after odor ON
-    bins = -BinOffset + [stepsize:stepsize:mywin];
-    bins = bins/stepsize;
+    % count spikes in a 1000 ms (mywin) bin after odor ON
+    bins = -BinOffset + [stepsize:stepsize:mywin]; %in ms
+    bins = bins/stepsize; % to convert to indices
     for tz = 1:12
         % get odor response during 'windowsize' after odor ON
         AreaUnderCurve(tz,1,i) = sum(AlignedFRs(tz,bins));
     end
     % get spike counts aligned to perturbation start
-    [~, AlignedFRs, BinOffset, AlignedPerturbationFRs, RawSpikeCounts] = ...
+    [~, AlignedFRs, BinOffset, AlignedPerturbationFRs, RawSpikeCounts] = ... 
         PlotFullSession(-i, whichOdor, AlignedSpikes, Events, TrialInfo, 6);
-    % count spikes in a 500 ms bin after odor ON
-    bins = -BinOffset + [stepsize:stepsize:mywin];
-    bins = bins/stepsize;
+    % count spikes in a 1000 ms bin after odor ON
+    bins = -BinOffset + [stepsize:stepsize:mywin]; %in ms
+    bins = bins/stepsize; % to convert to indices
     for tz = 1:12
         AreaUnderCurve(tz,2,i) = sum(AlignedPerturbationFRs(tz,bins));
     end
 end
 AreaUnderCurve = AreaUnderCurve/(mywin/stepsize);
-
 %% Plot the effect
 figure;
 subplot(1,2,1);
@@ -194,13 +193,17 @@ subplot(1,2,2);
 hold on
 axis square
 for i = 1:size(SingleUnits,2)
-    % mean perturbation response vs. mean mirror location response
+    % mean perturbation response vs. mean mirror location response 
+    % = roughly LocationTrialStart(11:12)
     subplot(1,2,1);
     plot(mean(AreaUnderCurve(11:12,1,i)),mean(AreaUnderCurve([1 5 9],2,i)),...
         'o', 'MarkerFaceColor', [0.7 0.7 0.7], 'MarkerEdgeColor', 'none');
-
+    % halt perturbations happen for tz type 1, 5 and 9
+    
     line([0 40],[0 40],'Color','k')
     subplot(1,2,2);
+    %comparing to halt response to max response at this location no matter
+    %what is the trial type
     plot(max(AreaUnderCurve(:,1,i)),mean(AreaUnderCurve([1 5 9],2,i)),...
         'o', 'MarkerFaceColor', [0.7 0.7 0.7], 'MarkerEdgeColor', 'none');
     line([0 40],[0 40],'Color','k')

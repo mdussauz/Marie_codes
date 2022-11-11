@@ -1,22 +1,17 @@
-%Responsive_Cells_O3_20221022
+function [resptest_response_class,channels_perc] = ClassifyOdorResponsiveCellsReplay (SessionPath, toplot)
+% writing this for closed-loop trials only
+%ouptuts are :
+% - resptest_response_class = for each unit whether 0 unresponsive, 1
+% excited, 2 inhibted, 3 mixed
+% - percentage of total cells in each class 
+% written by MD
 
-%% USER - select which mouse open loop session to analyze
-mousename = 'O1';
+%handles.WhereSession.String = fullfile(SessionPath,WhichSession);
 
-% [WhichSession, SessionPath] = uigetfile(); % to be used later for more flexibility
-switch mousename
-    case 'O3'
-        WhichSession = 'O3_20211005_r0_processed';
-        SessionPath = 'C:\Users\Marie\Documents\data\Smellocator\Processed\Behavior\O3';
-    case 'O1'
-        WhichSession = 'O1_20211012_r0_processed.mat';
-        SessionPath = 'C:\Users\Marie\Documents\data\Smellocator\Processed\Behavior\O1';
-end
-handles.WhereSession.String = fullfile(SessionPath,WhichSession);
-
-
+perc_plots = toplot;
 %% get the data loaded
-MySession = handles.WhereSession.String;
+%MySession = handles.WhereSession.String;
+MySession = SessionPath;
 [TracesOut, ColNames, handles.TrialInfo, SingleUnits, TTLs, ...
     ReplayTTLs, SampleRate, TimestampAdjuster, PassiveTracesOut, StartStopIdx, OpenLoop] = ...
     LoadProcessedDataSession(MySession);  % loads relevant variables
@@ -35,17 +30,11 @@ startoffset = 1;
 
 % trialalignedspikes = spiketimes relative to the most recent trial''s'' start timestamp');
 
-% Perturbations - Might be useful at some point but not used right now
+% Replay
 if any(strcmp(handles.TrialInfo.Perturbation(:,1),'OL-Replay'))
     [handles.ReplayAlignedSpikes, handles.ReplayEvents, handles.ReplayInfo] = ...
         ReplayAlignedSpikeTimes(SingleUnits,TTLs,...
         ReplayTTLs,handles.TrialInfo,handles.Events);
-end
-
-if any(strcmp(handles.TrialInfo.Perturbation(:,1),'Halt-Flip-Template'))
-    [handles.ReplayAlignedSpikes, handles.ReplayEvents, handles.ReplayInfo] = ...
-        PerturbationReplayAlignedSpikeTimes(SingleUnits,TTLs,...
-        ReplayTTLs,handles.TrialInfo,handles.Events,OpenLoop);
 end
 
 handles.NumUnits.String = num2str(size(SingleUnits,2));
@@ -58,7 +47,7 @@ N = size(SingleUnits,2);
 MyUnits = (1:N);
 
 %% Getting average responses for each odor for air and odor centered period
-window_length = 3200; %bin size is 2ms so multiple this number by 2 to get actual time in ms 
+window_length = 1550; %bin size is 2ms so multiple this number by 2 to get actual time in ms % used to be 3200 but changed to work across mice
 
 AllMeanCenterAlignedFRs = zeros(3, N, window_length); % odor x unit x window length 
 AllMeanTrialAlignedFRs = zeros(3, N, window_length); % odor x unit x window length 
@@ -68,7 +57,10 @@ AllTrialAlignedFRs = zeros(N, 3, 12, window_length); % unit x odor x tz x window
 for whichodor = 1:3
     for whichunit = 1:N
         AlignTo = 5; % to get aligned to TZ entry 
-        [AlignedFRs, AlignedRawSpikeCounts] = AlignedFRtoEvent(handles, whichunit, whichodor, AlignTo); %dim are TZ x time 
+        [AlignedFRs, AlignedRawSpikeCounts,P,PS] = AlignedFRtoEventReplay(handles, whichunit, whichodor, AlignTo); %dim are TZ x time 
+        if length(AlignedFRs) < window_length % in case the vector is too short to be stored, add zeros to make it the right length
+            AlignedFRs(:,window_length) = 0; 
+        end 
         %store each tz responses individually:
         AllCenterAlignedFRs(whichunit,whichodor,1:12,1:window_length) = AlignedFRs(:,1:window_length); 
         %take the mean across TZ:
@@ -78,7 +70,10 @@ for whichodor = 1:3
         
         
         AlignTo = 1; %Trial ON so I can get FR during ITI
-        [TrialAlignedFRs, TrialAlignedRawSpikeCounts] = AlignedFRtoEvent(handles, whichunit, whichodor, AlignTo);
+        [TrialAlignedFRs, TrialAlignedRawSpikeCounts, TP, TPS] = AlignedFRtoEventReplay(handles, whichunit, whichodor, AlignTo);
+        if length(TrialAlignedFRs) < window_length % in case the vector is too short to be stored, add zeros to make it the right length
+            TrialAlignedFRs(:,window_length) = 0; 
+        end 
         %store each tz responses individually:
         AllTrialAlignedFRs(whichunit,whichodor,1:12,1:window_length) = TrialAlignedFRs(:,1:window_length); 
         %take the mean across TZ:
@@ -108,8 +103,8 @@ threshold                   = 1;                                           % Pic
 
 %% Frame window averages of baseline periods. 
 % Here I divided the baseline in 4 periods with a window frame size equivalent to the ones I use for the response period 
-AllTrialAlignedFRs = reshape(AllTrialAlignedFRs, [N,36,3200]); %unit x (odor x tz) x time
-
+AllTrialAlignedFRs = reshape(AllTrialAlignedFRs, [N,36,window_length]); %unit x (odor x tz) x time
+ 
 baseline_A(:,:) = squeeze(mean(AllTrialAlignedFRs(:,:,reference_baseline(1,1):reference_baseline(1,2)),3,'omitnan')); % 1st window
 baseline_B(:,:) = squeeze(mean(AllTrialAlignedFRs(:,:,reference_baseline(2,1):reference_baseline(2,2)),3,'omitnan')); % 2nd window
 baseline_C(:,:) = squeeze(mean(AllTrialAlignedFRs(:,:,reference_baseline(3,1):reference_baseline(3,2)),3,'omitnan')); % 3rd window
@@ -258,7 +253,7 @@ end
 resptest_response_class(:,1) = resptest_response_all(:,1) + resptest_response_all(:,2);
         
 %% Percentage analysis of classified channels
-perc_plots = 1;
+%perc_plots = 1;
 
 switch perc_plots
     case 1
@@ -280,7 +275,7 @@ switch perc_plots
         resp_channels_perc(1,2) = channels_s*100/resp_channels;
         resp_channels_perc(1,3) = channels_m*100/resp_channels;
 
-        f3 = figure(3);
+        f3 = figure();
             subplot(1,2,1);
                 bar(channels_perc(1,1:2))
                     box off;
@@ -289,6 +284,7 @@ switch perc_plots
                     ylabel('Units (%)')
                     ylim([0 100]);
                     title('Percentage of responsive units');
+                    box off
             subplot(1,2,2);
                 bar(resp_channels_perc(1,1:3))
                     box off;
@@ -297,6 +293,7 @@ switch perc_plots
                     ylabel('Responsive units (%)')
                     ylim([0 100]);
                     title('Percentage of classification of responses');
+                    box off
     case 0    
         f3 = 0;
 end    
@@ -308,38 +305,39 @@ end
 %% FUNCTIONS 
 
 
-function [allTrials, perturbationTrials,AlignedFRs, AlignedRawSpikeCounts] = AlignedFRtoEvent(handles,whichUnit, whichodor, AlignTo)
+function [ActiveAlignedFRs, ActiveAlignedRawSpikeCounts, PassiveAlignedFRs, PassiveAlignedRawSpikeCounts] = AlignedFRtoEventReplay(handles,whichUnit, whichOdor, AlignTo)
+%AddReplay2FullSession(trialsdone, whichUnit, i, handles.ReplayAlignedSpikes, handles.ReplayEvents, handles.ReplayInfo, AlignType, handles.SortReplay.Value);
 
-thisUnitSpikes = handles.AlignedSpikes(:,whichUnit);
+thisUnitSpikes = handles.ReplayAlignedSpikes(:,whichUnit);
+whichodor = whichOdor;
 % get the trial sorting order
-whichTrials = intersect(find(cellfun(@isempty, handles.TrialInfo.Perturbation(:,1))), ...
-    find(handles.TrialInfo.Odor==whichodor));
-whichTrials = [whichTrials handles.TrialInfo.TargetZoneType(whichTrials) handles.TrialInfo.Duration(whichTrials)];
-whichTrials = sortrows(whichTrials,2);
+whichTrials = find(handles.ReplayInfo.Odor==whichodor); % both active and passive replays
+whichTrials = [whichTrials handles.ReplayInfo.TargetZoneType(whichTrials) ...
+               handles.ReplayInfo.Duration(whichTrials) (handles.ReplayInfo.TrialID(whichTrials)<0)']; 
 
-for tz = 1:12
-    whichTrials(whichTrials(:,2)==tz,:) = sortrows(whichTrials(whichTrials(:,2)==tz,:),3);
+
+% Sort trials - first by active and passive replay
+SortTrials = 1
+if SortTrials
+whichTrials(whichTrials(:,4)==0,:) = sortrows(whichTrials(whichTrials(:,4)==0,:),2);
+whichTrials(whichTrials(:,4)==1,:) = sortrows(whichTrials(whichTrials(:,4)==1,:),2);
+
+
+    for tz = 1:12
+        q = find((whichTrials(:,2)==tz)&(whichTrials(:,4)==0));
+        whichTrials(q,:) = sortrows(whichTrials(q,:),3);
+        q = find((whichTrials(:,2)==tz)&(whichTrials(:,4)==1));
+        whichTrials(q,:) = sortrows(whichTrials(q,:),3);
+    end
 end
 
-% also collect perturbation trials
-perturbationTrials = intersect(find(~cellfun(@isempty, handles.TrialInfo.Perturbation)), ...
-    find(handles.TrialInfo.Odor==whichodor));
-perturbationTrials = intersect(find(~strcmp(handles.TrialInfo.Perturbation(:,1),'OL-Replay')), ...
-    perturbationTrials);
-perturbationTrials = [perturbationTrials handles.TrialInfo.TargetZoneType(perturbationTrials) handles.TrialInfo.Duration(perturbationTrials)];
-perturbationTrials = sortrows(perturbationTrials,2);
-for tz = 1:12
-    perturbationTrials(perturbationTrials(:,2)==tz,:) = sortrows(perturbationTrials(perturbationTrials(:,2)==tz,:),3);
-end
-
-allTrials = vertcat(whichTrials, perturbationTrials);
 %% USER - select with event to align to
 
-myEvents = handles.Events(allTrials(:,1),:);
+myEvents = handles.ReplayEvents(whichTrials(:,1),:);
 switch AlignTo
     case 1 % to trial ON
         Xlims = [-1.2 -1];
-        Offset = 0*myEvents(:,1);
+        Offset = 0*myEvents(:,4);
     case 2 % odor ON
         odorON = myEvents(:,1);
         myEvents(:,1) = 0; % replace odorON with TrialON
@@ -366,23 +364,27 @@ switch AlignTo
         % offset all events with ON timestamp
         myEvents = myEvents - Offset;
         Xlims = [-1.2 -1] - 1;
-        %         case 6 % perturbation start
-        %             Offset = myEvents(:,5);
-        %             % offset all events with ON timestamp
-        %             myEvents = myEvents - Offset;
-        %             Xlims = [-1.2 -1];
 end
 
 %% Calculate PSTHs for specific event
 AlignedFRs = []; RawSpikeCounts = [];
 BinOffset = Xlims(1)*1000; % would be window start here
-
+% of note "whichTrials" is for closed loop trials only and do not take into
+% account perturbation trials
 for TZ = 1:12
-    thisTZspikes = thisUnitSpikes(whichTrials(find(whichTrials(:,2)==TZ),1)); %spiketimes for all trials of 1 tz type
-    Events2Align = Offset(find(whichTrials(:,2)==TZ),1); %time at which event is happening for all trials of tz type
-    [myFR, myPSTH] = MakePSTH_v3(thisTZspikes,Events2Align,BinOffset,'downsample',500); %resulting psth is an average of all trials of tz type
-    AlignedFRs(TZ,1:numel(myFR)) = myFR;
-    AlignedRawSpikeCounts(TZ,1:numel(myPSTH)) = myPSTH;
+    % for active replay
+    ActivethisTZspikes = thisUnitSpikes(whichTrials(find((whichTrials(:,2)==TZ)&(whichTrials(:,4)==0)),1)); %spiketimes for all trials of 1 tz type
+    ActiveEvents2Align = Offset(find((whichTrials(:,2)==TZ)&(whichTrials(:,4)==0)),1); %time at which event is happening for all trials of tz type
+    [myFR, myPSTH] = MakePSTH_v3(ActivethisTZspikes,ActiveEvents2Align,BinOffset,'downsample',500); %resulting psth is an average of all trials of tz type
+    ActiveAlignedFRs(TZ,1:numel(myFR)) = myFR;
+    ActiveAlignedRawSpikeCounts(TZ,1:numel(myPSTH)) = myPSTH;
+    
+    %for passive replay
+    PassivethisTZspikes = thisUnitSpikes(whichTrials(find((whichTrials(:,2)==TZ)&(whichTrials(:,4)==1)),1)); %spiketimes for all trials of 1 tz type
+    PassiveEvents2Align = Offset(find((whichTrials(:,2)==TZ)&(whichTrials(:,4)==1)),1); %time at which event is happening for all trials of tz type
+    [myFR, myPSTH] = MakePSTH_v3(PassivethisTZspikes,PassiveEvents2Align,BinOffset,'downsample',500); %resulting psth is an average of all trials of tz type
+    PassiveAlignedFRs(TZ,1:numel(myFR)) = myFR;
+    PassiveAlignedRawSpikeCounts(TZ,1:numel(myPSTH)) = myPSTH;
 end
 
 %entries_done = TZ; % might be needed when looking at perturbations
@@ -400,4 +402,4 @@ end
 %x = size(allTrials,1);
 
 end
-    
+end

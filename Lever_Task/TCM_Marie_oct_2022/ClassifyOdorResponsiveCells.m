@@ -1,5 +1,9 @@
-function [channels_perc] = ClassifyOdorResponsiveCells (SessionPath, toplot)
-
+function [resptest_response_class,channels_perc] = ClassifyOdorResponsiveCells (SessionPath, toplot)
+% writing this for closed-loop trials only
+%ouptuts are :
+% - resptest_response_class = for each unit whether 0 unresponsive, 1
+% excited, 2 inhibted, 3 mixed
+% - percentage of total cells in each class 
 % written by MD
 
 %handles.WhereSession.String = fullfile(SessionPath,WhichSession);
@@ -375,7 +379,8 @@ end
 %% Calculate PSTHs for specific event
 AlignedFRs = []; RawSpikeCounts = [];
 BinOffset = Xlims(1)*1000; % would be window start here
-
+% of note "whichTrials" is for closed loop trials only and do not take into
+% account perturbation trials
 for TZ = 1:12
     thisTZspikes = thisUnitSpikes(whichTrials(find(whichTrials(:,2)==TZ),1)); %spiketimes for all trials of 1 tz type
     Events2Align = Offset(find(whichTrials(:,2)==TZ),1); %time at which event is happening for all trials of tz type

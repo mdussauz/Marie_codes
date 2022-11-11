@@ -1,6 +1,6 @@
 %%TuningCurve comparisons for Replay
 
-%% for O5
+%% for O1
 SessionPath = 'O1/O1_20211012_r0_processed.mat';
 ChosenUnits = []; %MyUnits = [8 35 28 55 39]; 
 

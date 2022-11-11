@@ -7,6 +7,7 @@
 
 %% USER - select which mouse open loop session to analyze
 mousename = 'O3';
+version = 2; %which version of tuning curve comparison
 %% USER - turn on/off response plotting (tuning curve, raster and psth)
 % doesn't turn off the cumulative frequency plot
 Toplot =0; %1 for ON
@@ -22,7 +23,7 @@ SessionPath = 'O2/O2_20211011_r0_processed.mat';
 ChosenUnits = []; %MyUnits = [8 35 28 55 39]; 
 
     case 'O3'
-SessionPath = 'O3/O3_20211005_r0_processed.mat';
+SessionPath = 'O3/O3_20211005_r0_processed.mat'; %units chosen for poster
 ChosenUnits = []; %ChosenUnits = [8 21 28 55 39]; 
 %ChosenUnits = [8 21 34 28 29 39 44 55]; 
 
@@ -56,9 +57,16 @@ end
 % set binsize in SmellocatorTuning.m
 % use fine bins (10) or coarse bins (24)
 % fine bins give better tuning curves, but noisy residual comparisons
-
+switch version
+    case 1
+% version 1 no bootstrap
 [TuningCurve, XBins, PairedCorrs, PairedResiduals, ControlCorrs, ControlResiduals] = ...
     GetOdorTuningCurves(SessionPath);
+    case 2
+% version 2 with bootstraps
+[mean_CR_all_boot,TuningCurve, XBins, PairedCorrs, PairedResiduals, ControlCorrs, ControlResiduals] = ...
+    GetOdorTuningCurves_v2(SessionPath);
+end
 
 %% get cumulative distributions of the pairwise tuning curve correlations
 XVar = (0:0.0001:0.35)';
