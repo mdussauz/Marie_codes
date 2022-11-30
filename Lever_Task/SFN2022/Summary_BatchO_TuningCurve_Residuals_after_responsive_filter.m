@@ -2,7 +2,7 @@
 % written by MD
 
 %% USER INPUT
-filter = 0; % 0 for no responsiveness filter 
+filter = 1; % 0 for no responsiveness filter 
 
 %%
 mousename = {'O1', 'O2', 'O3', 'O7', 'O8', 'O9'}; % dropping off O5 since noisy ephys during both open loop sessions
@@ -53,6 +53,7 @@ for mouse = 1:length(mousename)
     cutoff(1,3) = XVar(find(ResidualDist(:,4)>=0.99,1,'first'));
     
     UnitsNumber(mouse) = numel(unique(PairedResiduals(:,4))); 
+    %counts(:, 2, 1) to check the number of cl changed units for cutoff 97%
     
     for k = 1:3 % for each cutoff 95, 97 and 99 
         counts(mouse,k,1) = numel(unique(PairedResiduals(find(AllResiduals(:,4)>cutoff(1,k)),4)));
@@ -80,7 +81,7 @@ figure()%modulated 97% cutoff per mouse
 
 Y2 = [];
 chosen_cutoff = 2;
-colors = [Plot_Colors('k');Plot_Colors('r');Plot_Colors('t'); Plot_Colors('o')];
+colors = [Plot_Colors('k');Plot_Colors('t'); Plot_Colors('r'); Plot_Colors('o')];
 for whatmouse = 1:length(X)
     Y2 = squeeze(percentmodulated(whatmouse,chosen_cutoff,:));
     b = bar(X(whatmouse),Y2); hold on

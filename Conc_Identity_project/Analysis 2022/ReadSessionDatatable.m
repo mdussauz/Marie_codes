@@ -10,7 +10,7 @@ function SessionInfo = ReadSessionDatatable(FilePath, FileName)
 
 if nargin < 1
     if strcmp(computer,'PCWIN64')
-        FilePath = 'C:\Users\Marie\Desktop';
+        FilePath = 'C:\Users\Marie\Documents\Code\Marie_codes\Conc_Identity_project\Analysis 2022';
     else
         FilePath = 'opt/Marie_codes/Conc_Identity_project/Analysis 2022';
     end
