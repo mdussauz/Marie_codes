@@ -18,7 +18,7 @@ if ExpType == "Conc"
 	timepoints = 10000; 
     
     %keeping only spikes from conc exp:
-    goodcluster = struct('id',[],'spikecount',[],'spikes',[], 'stimulus', []); %initiate 
+    goodcluster = struct('id',[],'spikecount',[],'spikes',[], 'stimulus', [], 'settings',[]);  %initiate 
     for cluster = 1:length(allclusters)
         if length(allclusters(cluster).spikes) == 140 %number of trials in conc exp
         goodcluster = [goodcluster,allclusters(cluster)];
@@ -32,7 +32,7 @@ elseif ExpType == "Id"
     timepoints = 10000;%in previous version of this exp it was shorter   
     
     %keeping only spikes from id exp:
-    goodcluster = struct('id',[],'spikecount',[],'spikes',[], 'stimulus', []); %initiate 
+    goodcluster = struct('id',[],'spikecount',[],'spikes',[], 'stimulus', [], 'settings',[]);  %initiate 
     for cluster = 1:length(allclusters)
         if length(allclusters(cluster).spikes) == 112 %number of trials in id exp
         goodcluster = [goodcluster,allclusters(cluster)];

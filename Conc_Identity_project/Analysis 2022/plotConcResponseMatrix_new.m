@@ -46,7 +46,7 @@ for whatsmell = 1:5
         h = imagesc(squeeze(z_score));
         set(h, 'XData', [firstbin, lastbin]);
         xlim([firstbin, lastbin]);
-        caxis([-4  4]);
+        caxis([-5  5]);
         xline(0,'k--');
         xline(2,'k--');
         clear mu; clear sigma; clear z_score;
@@ -77,7 +77,8 @@ for whatsmell = 1:5
     subplot(3,2,whatsmell)
     plot (X,Y, '-b', 'LineWidth', 1.5)
     xlim([-5 0])
-    ylim([min(all_normalized_mean(:,whatsmell))-0.05 max(all_normalized_mean(:,whatsmell)+0.05)])
+    %ylim([min(all_normalized_mean(:,whatsmell))-0.05 max(all_normalized_mean(:,whatsmell)+0.05)])
+    ylim([0.2 0.55])
     xticks(X)
     yline(0,'k--');
     title( ['Odor',  num2str(whatsmell)])
@@ -85,7 +86,8 @@ for whatsmell = 1:5
     subplot(3,2,6)
     plot (X,Y2, '-b', 'LineWidth', 1.5)
     xlim([-5 0])
-    ylim([min(Y2)-0.05 max(Y2)+0.05])
+    %ylim([min(Y2)-0.05 max(Y2)+0.05])
+    ylim([0.2 0.55])
     xticks(X)
     yline(0,'k--');
     

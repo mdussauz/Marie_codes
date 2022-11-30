@@ -34,14 +34,14 @@ decoding = 0; % optional
 
 
 Nneurons = size(PSTH5D,1);
-%NOdors = size(PSTH5D,2)*size(PSTH5D,3); %  for id/conc exp % unused
-NId = size(PSTH5D,2); % nber of odor id 
-NConc = size(PSTH5D,3); % nber of od conc
-NRep = size(PSTH5D,5); % nber of repeats 
+NOdors = size(PSTH5D,2)*; %  for id/conc exp
+NId = 5; % nber of odor id 
+NConc = 4; % nber of od conc
+NRep = 5; % nber of repeats 
 
 % 3 arrays needed to run code
 NtrialNum = zeros(Nneurons, NId, NConc); %initialize 
-NtrialNum(:,:,:) = NRep; %used to be 5
+NtrialNum(:,:,:) = 5;
 trialNum = NtrialNum;
 firingRates =  PSTH5D;
 firingRatesAverage = nanmean(firingRates,5);

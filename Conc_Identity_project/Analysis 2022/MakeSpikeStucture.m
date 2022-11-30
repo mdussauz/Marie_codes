@@ -111,7 +111,7 @@ for i = 1: length(myKsDir) %loop through each rec file
                 mygoodspikes = mygoodspikes - odorstart; % align to every odor start
                 goodspiketimes(mytrial) = {mygoodspikes}; %store spikes per trial
                 %each column of goodspiketimes is a trial
-                %for each trial gives you the times in sec at which spikes occured
+                %they contain the times in sec at which spikes occured 
             end
             goodcluster(mycluster).id = sp.cids(mycluster); %store cluster id
             goodcluster(mycluster).spikecount = numel(allgoodspikes);%store number of spikes
