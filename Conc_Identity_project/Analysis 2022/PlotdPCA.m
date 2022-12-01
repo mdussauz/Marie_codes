@@ -22,6 +22,7 @@ x = reshape(dpc,ncomp, size(smoothPSTH,2), size(smoothPSTH,3), T);
 %which_comps = [3 6 7]; % for AON identity with oil
 which_comps = [2 4 7]; % for AON identity without oil
 which_comps = [4 7 14]; % for APC identity without oil
+which_comps = [2 4 8]; % for AON E3 identity without oil
 
 
 figure(103);subplot(122);hold on;axis('square');
@@ -65,8 +66,9 @@ end
 
 figure(104);subplot(122);hold on;axis('square');
 %which_comps = [4 10]; % for AON concentration with oil
-which_comps = [5 8 20]; % for AON concentration without oil
-which_comps = [2 9 18]; % for APC concentration without oil
+% which_comps = [5 8 20]; % for AON concentration without oil
+% which_comps = [2 9 18]; % for APC concentration without oil
+which_comps = [5 10]; % for AON E3 concentration without oil
 
 for odor = 1:size(smoothPSTH, 2)
         hold on;
