@@ -1,4 +1,4 @@
-function []= plotConcResponseMatrix_new(smoothPSTH)
+function []= plotConcResponseMatrix_v2(smoothPSTH)
 %written by MD
 
 firingRatesAverage = nanmean(smoothPSTH,5);

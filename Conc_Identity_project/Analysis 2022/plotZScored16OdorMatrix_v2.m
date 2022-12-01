@@ -1,4 +1,4 @@
-function []= plotZScored16OdorMatrix_new(smoothPSTH)
+function []= plotZScored16OdorMatrix_v2(smoothPSTH)
 
 %written by MD
 % Z SCORE response matrix for each concentration and each odor

@@ -43,13 +43,13 @@ end
 %% Compute PSTH 5D for dPCA
 % 1st output is str array for the chosen exp type
 % 2nd output is the spikes (0 or 1) matrix
-[goodcluster,spikes] = ComputePSTHMultiD_new(allclusters, WhatExp,4); %CHANGE THE 5 condition because NOT WORKING OUT FOR 16 ODOR
+[goodcluster,spikes] = ComputePSTHMultiD_v2(allclusters, WhatExp,4); %CHANGE THE 5 condition because NOT WORKING OUT FOR 16 ODOR
 
 %% Smooth PSTH
-[smoothPSTH] = SmoothPSTH_new(spikes, 100, WhatExp);
+[smoothPSTH] = SmoothPSTH_v2(spikes, 100, WhatExp);
 
 %% Plotting Conc responses
-plotConcResponseMatrix_new(smoothPSTH);
+plotConcResponseMatrix_v2(smoothPSTH);
 
 %% Run dPCA
 %[W, explVar] = RundPCA(smoothPSTH);

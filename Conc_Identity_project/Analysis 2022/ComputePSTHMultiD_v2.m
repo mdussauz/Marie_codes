@@ -1,4 +1,4 @@
-function [goodcluster, PSTH] = ComputePSTHMultiD_new(allclusters, ExpType,Dim)
+function [goodcluster, PSTH] = ComputePSTHMultiD_v2(allclusters, ExpType,Dim)
 %written by MD
 % inputs:
 % allclusters = structure array produced by dPCA prep code
@@ -12,18 +12,18 @@ function [goodcluster, PSTH] = ComputePSTHMultiD_new(allclusters, ExpType,Dim)
 % exp 
 
 %new experiment structure is 6s pre stim; 2s stim; 2s post stim
+
+%% initialize 
+goodcluster = struct('id',[],'spikecount',[],'spikes',[], 'stimulus', [], 'settings',[]);  
  
 if ExpType == "Conc"
     NOdors = 20;
 	timepoints = 10000; 
     
-    %keeping only spikes from conc exp:
-    goodcluster = struct('id',[],'spikecount',[],'spikes',[], 'stimulus', [], 'settings',[]);  %initiate 
+    %keeping spikes from conc exp:
     for cluster = 1:length(allclusters)
         if length(allclusters(cluster).spikes) == 140 %number of trials in conc exp
         goodcluster = [goodcluster,allclusters(cluster)];
-        goodcluster( all( cell2mat( arrayfun( @(x) structfun( @isempty, x ),...
-            goodcluster, 'UniformOutput', false ) ), 1 ) ) = []; %remove empty lines
         end
     end 
     
@@ -31,16 +31,15 @@ elseif ExpType == "Id"
     NOdors = 16;
     timepoints = 10000;%in previous version of this exp it was shorter   
     
-    %keeping only spikes from id exp:
-    goodcluster = struct('id',[],'spikecount',[],'spikes',[], 'stimulus', [], 'settings',[]);  %initiate 
+    %keeping spikes from id exp:
     for cluster = 1:length(allclusters)
         if length(allclusters(cluster).spikes) == 112 %number of trials in id exp
         goodcluster = [goodcluster,allclusters(cluster)];
-        goodcluster( all( cell2mat( arrayfun( @(x) structfun( @isempty, x ),...
-            goodcluster, 'UniformOutput', false ) ), 1 ) ) = []; %remove empty lines
         end
     end 
 end
+goodcluster( all( cell2mat( arrayfun( @(x) structfun( @isempty, x ),...
+    goodcluster, 'UniformOutput', false ) ), 1 ) ) = []; %remove empty lines
 
 %% Defining common variables 
 firstbin = -6;
