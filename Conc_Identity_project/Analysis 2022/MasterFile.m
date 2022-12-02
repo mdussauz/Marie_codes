@@ -9,7 +9,7 @@
 %% Specify what region and what mouse (all or specific one)
 BrainRegion = 'AON'; % choices: AON or APC
 Mouse = 'E3'; % choices: all, E2, E3, or E6
-WhatExp = 'Id'; %choices: Conc or Id
+WhatExp = 'Conc'; %choices: Conc or Id
 
 %% -- Extract info about recording sessions
 %SessionInfo = ReadSessionDatatable(FilePath, FileName); 
@@ -43,7 +43,10 @@ end
 %% Compute PSTH 5D for dPCA
 % 1st output is str array for the chosen exp type
 % 2nd output is the spikes (0 or 1) matrix
-[goodcluster,spikes] = ComputePSTHMultiD_v2(allclusters, WhatExp,4); %CHANGE THE 5 condition because NOT WORKING OUT FOR 16 ODOR
+
+% 3rd input is optional and allows to specify whether to make a 4 or 5 dim
+% matrix
+[goodcluster,spikes] = ComputePSTHMultiD_v2(allclusters, WhatExp); 
 
 %% Smooth PSTH
 [smoothPSTH] = SmoothPSTH_v2(spikes, 100, WhatExp);

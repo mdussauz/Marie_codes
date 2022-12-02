@@ -1,7 +1,7 @@
-function [smoothPSTH] = SmoothPSTH_new(PSTH, timewindow, ExpType)
+function [smoothPSTH] = SmoothPSTH_v2(PSTH, timewindow, ExpType)
 
-% written by MD
-% function to smooth PSTH
+% -- written by MD
+% -- function to smooth PSTH
 % Inputs:
 % PSTH4D or 5D for 16 odors or conc exp
 % timewindow = time in ms over which to smooth 
@@ -13,18 +13,9 @@ function [smoothPSTH] = SmoothPSTH_new(PSTH, timewindow, ExpType)
 
 Nneurons= size(PSTH,1);
 t_wid = timewindow;  % width of kernel (in ms)
-taxis = -(t_wid*5):(t_wid*5);  % make a time axis of 1000 ms for a window of 100 ms
+taxis = -(t_wid*5):(t_wid*5);  % e.g. make a time axis of 1000 ms for a window of 100 ms
 gauss_kernel = normpdf(taxis, 0, t_wid);
 gauss_kernel = gauss_kernel ./ sum(gauss_kernel);
-
-if ndims(PSTH) == 5 && ExpType == "Conc" % conc exp
-    NOdors = 20;
-elseif ndims(PSTH) == 4 && ExpType == "Conc" % conc exp and 4d PSTH matrix
-    NOdors = 20;
-elseif ndims(PSTH) == 4 && ExpType == "Id"  % 16 odors exp
-    NOdors = 16;   
-end
-   
 
 %%
 switch ndims(PSTH)
@@ -58,7 +49,7 @@ switch ndims(PSTH)
     smoothPSTH = zeros(Nneurons,NId,TrialTime,NRep);
     
     for clusterIdx = 1:Nneurons % loop through each unit
-        for x = 1:NOdors %for each odor stimulus
+        for x = 1:NId %for each odor stimulus
             for j = 1:NRep % for j = 1:numel(reps) %repeat number % have to bypass that when >5
                 tempPSTH = squeeze(PSTH(clusterIdx,x,:,j)); % for one cluster, all times for one type 
                 zs = conv(tempPSTH,gauss_kernel,'same');

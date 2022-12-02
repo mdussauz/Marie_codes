@@ -1,5 +1,6 @@
 function [goodcluster, PSTH] = ComputePSTHMultiD_v2(allclusters, ExpType,Dim)
-%written by MD
+% -- written by MD
+% -- creates a matrix containing spikes (0 or 1) with dim specified below 
 % inputs:
 % allclusters = structure array produced by dPCA prep code
 % ExpType = "Conc" if concentration exp or "Id" if 16 odors exp
@@ -12,6 +13,14 @@ function [goodcluster, PSTH] = ComputePSTHMultiD_v2(allclusters, ExpType,Dim)
 % exp 
 
 %new experiment structure is 6s pre stim; 2s stim; 2s post stim
+
+%% default settings 
+if nargin < 3 % if Dim is not specified 
+    if ExpType == "Conc"
+        Dim = 5;
+    elseif ExpType == "Id"
+        Dim = 4; 
+    end
 
 %% initialize 
 goodcluster = struct('id',[],'spikecount',[],'spikes',[], 'stimulus', [], 'settings',[]);  
@@ -132,7 +141,13 @@ switch Dim
     end
     PSTH = PSTH4D;
 end 
-    
+
+%% Replace double spikes in bin by single spike
+% sometimes 2 spikes are counted in a 1ms bin 
+% this is not possible given refractory period
+% replace those by 1
+PSTH(PSTH==2)=1;
+
 end
 
 
