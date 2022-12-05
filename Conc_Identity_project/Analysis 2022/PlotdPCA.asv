@@ -20,7 +20,7 @@ T = size(smoothPSTH,4); %time dimension
 ncomp=20; %number of components - number fixed in RunPCA
 
 dpc = W(:,1:ncomp)'*X; 
-x = reshape(dpc,[ncomp, Nodor, Nconc, T]);
+x = reshape(dpc,ncomp, size(smoothPSTH,2), size(smoothPSTH,3), T);
 
 %% which_comps
 % Getting the top 3 components to plot for each marginalization (id an conc);

@@ -56,13 +56,14 @@ plotConcResponseMatrix_v2(smoothPSTH);
 
 %% Run dPCA
 %[W, explVar, whichMarg] = RundPCA(smoothPSTH); %with oil and all conc
-%[W, explVar, whichMarg] = RundPCA(smoothPSTH(:,1:4,:,:,:)); %without oil and all conc
-[W, explVar, whichMarg] = RundPCA(smoothPSTH(:,1:4,2:4,:,:)); %without oil and 3 highest conc
+%[W, explVar] = RundPCA(smoothPSTH(:,1:4,:,:,:)); %without oil and all conc
+[W, explVar] = RundPCA(smoothPSTH(:,1:4,2:4,:,:)); %without oil and 3 highest conc
+
 
 %% Plot dPCA plots
-%PlotdPCA(smoothPSTH, W, explVar, whichMarg) %with oil and all conc
-%PlotdPCA(smoothPSTH(:,1:4,:,:,:), W, explVar, whichMarg) %without oil and all conc
-PlotdPCA(smoothPSTH(:,1:4,:,:,:), W, explVar, whichMarg) %without oil and 3 highest conc
+%PlotdPCA(smoothPSTH, W, explVar) %with oil and all conc
+%PlotdPCA(smoothPSTH(:,1:4,:,:,:), W, explVar) %without oil and all conc
+PlotdPCA(smoothPSTH(:,1:4,:,:,:), W, explVar) %without oil and 3 highest conc
 
 %% Run odor generalizer decoder
 OdorGeneralizer(smoothPSTH)

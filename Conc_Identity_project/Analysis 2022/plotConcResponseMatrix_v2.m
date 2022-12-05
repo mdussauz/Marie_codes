@@ -8,7 +8,6 @@ lastbin = 4;
 %% Reponse Matrix for each concentration and each odor
 for whatsmell = 1:5
     figure(whatsmell)
-    %figure()
     FRAverageConc = squeeze(firingRatesAverage(:,whatsmell,:,:));
     for whatconc = 1:4
         subplot(1,4,whatconc)
@@ -35,7 +34,6 @@ end
 %
 %for myNeuron = 1:Nneurons %for each neuron
 for whatsmell = 1:5
-    %figure()
     figure(whatsmell+5)
     for whatconc = 1:4
         FRAverageConc = squeeze(firingRatesAverage(:,whatsmell,:,:));
@@ -59,7 +57,6 @@ end
 
 %% Population mean reponse plots - trend of response
 for whatsmell = 1:5
-    %figure()
     for whatconc = 1:4
         FRAverageConc = squeeze(firingRatesAverage(:,whatsmell,:,:));
         airmean = squeeze(nanmean(FRAverageConc(:,:,1:6000),[1 2 3]));
@@ -71,7 +68,7 @@ for whatsmell = 1:5
     
     X = [-4 -3 -2 -1];
     Y = all_normalized_mean(:,whatsmell);
-    Y2 = mean(all_normalized_mean,2);
+    Y2 = mean(abs(all_normalized_mean),2);
     
     figure(11)
     subplot(3,2,whatsmell)

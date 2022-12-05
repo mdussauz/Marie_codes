@@ -1,4 +1,4 @@
-function [W, explVar] = RundPCA(PSTH5D)
+function [W, explVar,whichMarg] = RundPCA(PSTH5D)
 addpath(genpath('/opt/dPCA-master'))
 
 % dPCA 
