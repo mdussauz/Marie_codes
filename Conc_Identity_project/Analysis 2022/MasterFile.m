@@ -8,7 +8,7 @@
 
 %% Specify what region and what mouse (all or specific one)
 BrainRegion = 'AON'; % choices: AON or APC
-Mouse = 'E3'; % choices: all, E2, E3, or E6
+Mouse = 'all'; % choices: all, E2, E3, or E6
 WhatExp = 'Conc'; %choices: Conc or Id
 
 %% -- Extract info about recording sessions
@@ -22,7 +22,7 @@ else % Marie's work linux machine
     datapath = '/mnt/data/allclusters/2022';
 end 
 
-savefile = ['allclusters_',WhatExp, '_',BrainRegion,'_',Mouse,'.mat'];
+savefile = ['allclusters_',BrainRegion,'_',Mouse,'.mat'];
 savepath = fullfile(datapath,savefile);
 
 if exist(savepath, 'file')
@@ -62,7 +62,7 @@ plotConcResponseMatrix_v2(smoothPSTH);
 %% Plot dPCA plots
 %PlotdPCA(smoothPSTH, W, explVar, whichMarg) %with oil and all conc
 %PlotdPCA(smoothPSTH(:,1:4,:,:,:), W, explVar, whichMarg) %without oil and all conc
-PlotdPCA(smoothPSTH(:,1:4,:,:,:), W, explVar, whichMarg) %without oil and 3 highest conc
+PlotdPCA(smoothPSTH(:,1:4,2:4,:,:), W, explVar, whichMarg) %without oil and 3 highest conc
 
 %% Run odor generalizer decoder
 OdorGeneralizer(smoothPSTH)

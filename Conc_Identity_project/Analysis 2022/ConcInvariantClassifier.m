@@ -1,10 +1,5 @@
-function OdorGeneralizer(smoothPSTH)
-% Generalization to a novel concentration: after odor identity was learned 
-% from a test set of concentration, we trained the classifier to identify 
-% the odorant (one of a total five possibilities) by learning on three out 
-% the four concentrations, and further tested for generalization to a novel
-% held-out concentration.
-
+function ConcInvariantClassifier(smoothPSTH)
+%%
 temp=smoothPSTH(:,:,:,:,3:7);
 temp = reshape(temp,[size(smoothPSTH,1),20,10000,5]);
 bins = 0:0.2:4;
@@ -19,40 +14,50 @@ for k = 1:length(bins)-1
 end
 
 %% DECODER
+Results = struct('Params',{},'OutputFit',{},'OutputCross',{}, ...
+    'WeightsFit',{}, 'WeightsCross', {});
 
 ncells = size(CUMCUBEPre,2);
 CellNum = 10:5:ncells;
 
-nboot = 10;
-GENERAL_PERF_Pre = zeros(20,length(CellNum),4,nboot,5);
 
-for t = 1:size(CUMCUBEPre,1)
+GENERAL_PERF_Pre = zeros(20,length(CellNum),4,5);
+GENERAL_PERF_Mus = zeros(20,length(CellNum),4,5);
+
+for t = 1:20
     t
     RESPCUBE_Pre = squeeze(CUMCUBEPre(t,:,:,1:4));
-    x = reshape(RESPCUBE_Pre,[ncells 5 4 4]); 
+    x = reshape(RESPCUBE_Pre,[ncells 5 4 4]);
     x = zscore(x(:,:),0,2);
     x = reshape(x,[ncells 5 4 4]);
-       
+    
+    RESPCUBE_Mus = squeeze(CUMCUBEPre(t,:,:,1:4));
+    x_mus = reshape(RESPCUBE_Mus,[ncells 5 4 4]);
+    x_mus = zscore(x_mus(:,:),0,2);
+    x_mus = reshape(x_mus,[ncells 5 4 4]);
+    
     for test = 1:4
         trainset = setdiff(1:4,test);
-        xtrain = squeeze(x(:,:,trainset,:));
-
-        xtest = squeeze(x(:,:,test,:));
+        xtrain = squeeze(x(:,:,:,trainset));
+        
+        xtest = squeeze(x(:,:,:,test));
+        xtest_mus = squeeze(x_mus(:,:,:,test));
         
         [nroi,ncategory,ndil,nrep] = size(xtrain);
         nstim = ncategory*ndil;
         nTrainRep = nrep;
-
+        nboot = 10;
+        
         Output = zeros(ncategory,nstim);
         Output_cross = zeros(ncategory,nstim,nrep);
-
+        
         for k = 1:ncategory
             Output(k,k:ncategory:end) = 1;
         end
         Output = repmat(Output,[1 nrep]);
-                
+        
         for CellIter = 1:length(CellNum)
-            PERF = zeros(nboot,2,5);            
+            PERF = zeros(nboot,2,5);
             for boot = 1:nboot
                 CellId = randperm(ncells,CellNum(CellIter));
                 tic
@@ -63,40 +68,40 @@ for t = 1:size(CUMCUBEPre,1)
                     Y = Output(k,:)';
                     SVMModel = fitcsvm(X,Y,'Standardize',true,'KernelFunction','Poly',...
                         'KernelScale','auto');
-
-                    [a,~]= predict(SVMModel,Xtest(:,:));
-                    temp = reshape(a,[ncategory,nrep]);
+                    
+                    [a,b]= predict(SVMModel,Xtest(:,:));
+                    temp = reshape(a,[ncategory,ndil]);
                     label(k,:) = mean(temp,2);
-
+                    
+                    [a,b]= predict(SVMModel,Xtest_mus(:,:));
+                    temp = reshape(a,[ncategory,ndil]);
+                    label_mus(k,:) = mean(temp,2);
+                    
                 end
                 PERF(boot,1,1:5) = diag(label);
-                GENERAL_PERF_Pre(t,CellIter,test,boot,1:5) = squeeze(PERF(boot,1,:));
-
+                
+                PERF(boot,2,1:5) = diag(label_mus);
             end
-
+            GENERAL_PERF_Pre(t,CellIter,test,1:5) = mean(PERF(:,1,:));
+            GENERAL_PERF_Mus(t,CellIter,test,1:5) = mean(PERF(:,2,:));
+            %             CellNum(CellIter)
         end
-
+        
     end
 end
-%% PLOTTING FOR DECODERS
 
-AONperf_pre = squeeze(nanmean(GENERAL_PERF_Pre,3));
-
-xx = squeeze(nanmean(GENERAL_PERF_Pre,4));
-
+%% ----- plotting
 figure;
 figCount = 1;
 for j = 1:5
-    subplot(3,2,figCount);
-    imagesc(squeeze(mean(xx(:,:,:,j),3))',[0 1])
-    axis('square');
+    subplot(5,2,figCount);
+    imagesc(squeeze(mean(GENERAL_PERF_Pre(:,:,:,j),3))',[0 1])
+    %     axis('square');
     figCount = figCount+1;
-    xlim([2.5 20.5])
-    set(gca,'TickDir','out')
+    subplot(5,2,figCount);
+    imagesc(squeeze(mean(GENERAL_PERF_Mus(:,:,:,j),3))',[0 1])
+    %     axis('square');
+    figCount = figCount+1;
 end
-colormap('jet')
 
-figure;
-
-
-end 
+end

@@ -15,6 +15,14 @@ function [goodcluster, PSTH] = ComputePSTHMultiD_v2(allclusters, ExpType,Dim)
 %new experiment structure is 6s pre stim; 2s stim; 2s post stim
 
 %% default settings 
+global prestim
+global odorstim
+global poststim
+NRep = allclusters(1).repeats; %sanity check was ran before - rep num should be equal across all
+NId = 5; % nber of odor id 
+NConc = 4; % nber of od conc
+clusterNum = length(allclusters);
+
 if nargin < 3 % if Dim is not specified 
     if ExpType == "Conc"
         Dim = 5;
@@ -23,16 +31,19 @@ if nargin < 3 % if Dim is not specified
     end
 
 %% initialize 
-goodcluster = struct('id',[],'spikecount',[],'spikes',[], 'stimulus', [], 'settings',[]);  
- 
+goodcluster = struct('id',cell(1,clusterNum),'spikecount',cell(1,clusterNum),...
+    'spikes',cell(1,clusterNum), 'stimulus', cell(1,clusterNum), 'settings',...
+    cell(1,clusterNum),'repeats', cell(1,clusterNum));
+
+%%  Keeping info from the chosen experiment to analyze
 if ExpType == "Conc"
     NOdors = 20;
 	timepoints = 10000; 
     
     %keeping spikes from conc exp:
-    for cluster = 1:length(allclusters)
-        if length(allclusters(cluster).spikes) == 140 %number of trials in conc exp
-        goodcluster = [goodcluster,allclusters(cluster)];
+    for cluster = 1:clusterNum
+        if length(allclusters(cluster).spikes) == NRep*NOdors %number of trials in conc exp
+        goodcluster(cluster) = allclusters(cluster);
         end
     end 
     
@@ -41,18 +52,27 @@ elseif ExpType == "Id"
     timepoints = 10000;%in previous version of this exp it was shorter   
     
     %keeping spikes from id exp:
-    for cluster = 1:length(allclusters)
-        if length(allclusters(cluster).spikes) == 112 %number of trials in id exp
-        goodcluster = [goodcluster,allclusters(cluster)];
+    for cluster = 1:clusterNum
+        if length(allclusters(cluster).spikes) == NRep*NOdors %number of trials in id exp
+        goodcluster(cluster) = allclusters(cluster);
         end
     end 
 end
 goodcluster( all( cell2mat( arrayfun( @(x) structfun( @isempty, x ),...
     goodcluster, 'UniformOutput', false ) ), 1 ) ) = []; %remove empty lines
+%% Sanity check - make sure that all sessions at the same trial settings
+if ~isequal(goodcluster.settings)
+    disp ("There is a discrepancy in trial settings")
+end 
+
+%% Getting pre-stim, stim and post-stim times in ms
+prestim = goodcluster(1).settings(1);
+odorstim = goodcluster(1).settings(2);
+poststim = goodcluster(1).settings(3);
 
 %% Defining common variables 
-firstbin = -6;
-lastbin = 4;
+firstbin = - prestim/1000;
+lastbin = (odorstim + poststim)/1000;
 step = 0.001; %timebin for PSTH should be 1 ms 
 tbins = firstbin:step:lastbin;
 Nneurons= length(goodcluster); 
@@ -60,10 +80,8 @@ Nneurons= length(goodcluster);
 switch Dim
 %%    
     case 5 % Compute 5-D PSTH matrix as Neurons X Nber of Odors X Concentration X time (in ms) X Repeats 
-
-    NId = 5; % nber of odor id 
-    NConc = 4; % nber of od conc
-    NRep = length(find(goodcluster(1).stimulus==1)); % nber of repeats
+    
+    NRep = length(find(goodcluster(1).stimulus==1)); % nber of repeats    
     PSTH5D = zeros(Nneurons, NId, NConc ,timepoints, NRep); %initialize 
     
     %These assignements have changed in new experiments 

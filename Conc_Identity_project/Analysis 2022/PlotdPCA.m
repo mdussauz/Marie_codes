@@ -1,6 +1,10 @@
 function [] = PlotdPCA(smoothPSTH, W, explVar, whichMarg)
+%% defaults
+global prestim
+global odorstim 
+
 %% settings for plotting 
-time_window = 6000:8000; % odor window only - time window of PCs to plot 
+time_window = prestim:(prestim + odorstim); % odor window in ms - time window of PCs to plot 
 ToSmooth = 0;
 sp = 25; % window for smoothing 
 
@@ -32,7 +36,6 @@ x = reshape(dpc,[ncomp, Nodor, Nconc, T]);
 
 %% 3D plot - identity subspace 
 which_comps = find(whichMarg == 1,3); %1st 3 id comp among the 20 components
-
 figure();subplot(122);hold on;axis('square');
 
 for odor = 1:Nodor
@@ -62,8 +65,8 @@ for odor = 1:Nodor
 end
 
 %% 3D plot - concentration subspace 
-figure();subplot(122);hold on;axis('square');
 which_comps = find(whichMarg == 2,3); %1st 3 conc comp. among the 20 components
+figure();subplot(122);hold on;axis('square');
 
 for odor = 1:Nodor
         hold on;

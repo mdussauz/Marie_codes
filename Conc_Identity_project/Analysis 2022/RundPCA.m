@@ -30,11 +30,13 @@ addpath(genpath('/opt/dPCA-master'))
 % drive as a sparse matrix), then 
 %    firingRatesAverage = bsxfun(@times, mean(firingRates,5), size(firingRates,5)./trialNum)
 
+%% defaults
+global prestim
+global odorstim 
 decoding = 0; % optional 
 
-
+%%
 Nneurons = size(PSTH5D,1);
-%NOdors = size(PSTH5D,2)*size(PSTH5D,3); %  for id/conc exp % unused
 NId = size(PSTH5D,2); % nber of odor id 
 NConc = size(PSTH5D,3); % nber of od conc
 NRep = size(PSTH5D,5); % nber of repeats 
@@ -46,14 +48,14 @@ trialNum = NtrialNum;
 firingRates =  PSTH5D;
 firingRatesAverage = nanmean(firingRates,5);
 
-N =  size(PSTH5D,1); % 97   % number of neurons
-T = size(PSTH5D,4);     % number of time points
-S = size(PSTH5D,2);%7;       % number of odor
-C = size(PSTH5D,3);          % number of concentration
-E = size(PSTH5D,5);%20;     % maximal number of trial repetitions
+N =  size(PSTH5D,1); % number of neurons
+T = size(PSTH5D,4); % number of time points
+S = size(PSTH5D,2); % number of odor
+C = size(PSTH5D,3); % number of concentration
+E = size(PSTH5D,5); % maximal number of trial repetitions
 
 time = (1:T) / 1000;
-timeEvents = [6, 8]; %time of odor
+timeEvents = [prestim/1000, (prestim + odorstim)/1000]; %time of odor
 
 % setting random number of repetitions for each neuron and condition
 ifSimultaneousRecording = true;  % change this to simulate simultaneous 

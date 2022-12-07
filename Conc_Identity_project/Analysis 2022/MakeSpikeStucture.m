@@ -32,6 +32,10 @@ switch AnalysisChoice
         stimfilename = SessionInfo.StimFile(strcmp( 'Y',SessionInfo.IncludeInAnalysis) & strcmp('AON',SessionInfo.BrainRegion)& strcmp('E2',SessionInfo.MouseName));
         myKsDir = SessionInfo.RecFile(strcmp( 'Y',SessionInfo.IncludeInAnalysis) & strcmp('AON',SessionInfo.BrainRegion)& strcmp('E2',SessionInfo.MouseName));
         mousename = SessionInfo.MouseName(strcmp( 'Y',SessionInfo.IncludeInAnalysis) & strcmp('AON',SessionInfo.BrainRegion)& strcmp('E2',SessionInfo.MouseName));
+    case 'APC_E6'
+        stimfilename = SessionInfo.StimFile(strcmp( 'Y',SessionInfo.IncludeInAnalysis) & strcmp('APC',SessionInfo.BrainRegion)& strcmp('E6',SessionInfo.MouseName));
+        myKsDir = SessionInfo.RecFile(strcmp( 'Y',SessionInfo.IncludeInAnalysis) & strcmp('APC',SessionInfo.BrainRegion)& strcmp('E6',SessionInfo.MouseName));
+        mousename = SessionInfo.MouseName(strcmp( 'Y',SessionInfo.IncludeInAnalysis) & strcmp('APC',SessionInfo.BrainRegion)& strcmp('E6',SessionInfo.MouseName));
 end
 
 if strcmp(computer, 'PCWIN64') % Marie's remote desktop 
@@ -49,7 +53,7 @@ else % Marie's work linux machine
 end
 
 %% Make spikes structure 
-allclusters = struct('id',[],'spikecount',[],'spikes',[], 'stimulus', [], 'settings',[]); 
+allclusters = struct('id',[],'spikecount',[],'spikes',[], 'stimulus', [], 'settings',[], 'repeats', []); 
 
 for i = 1: length(myKsDir) %loop through each rec file
     [StimTime, StimList, Nrepeats] = ReadStimFile([stimfilename{i}, '.txt']);
@@ -71,14 +75,31 @@ for i = 1: length(myKsDir) %loop through each rec file
 
     % trial events are in Channel0: 
     TrialTimestamps = [Events.Channel0.On Events.Channel0.Off];
-    % delete 1st entry - just an empty trigger - and
-    % delete 2nd entry - extra trigger on/off from DAC reset (2022 change):
-    TrialTimestamps(1:2,:) = [];
     
-    % odor events are in Channel1:
-    OdorTimestamps = [Events.Channel1.On Events.Channel1.Off];
-    % delete 1st entry - extra odor on/off from DAC reset (2022 change): 
-    OdorTimestamps(1,:) = [];
+    C = strsplit(myKsDir{i},'-'); %split the KsDir name
+    ExpYear = str2double(C{1}); % year of experiment
+    
+    if ExpYear >= 2022 % for experiments that happened on/after 2022
+        % delete 1st entry - just an empty trigger - and
+        % delete 2nd entry - extra trigger on/off from DAC reset (2022 change):
+        TrialTimestamps(1:2,:) = [];
+        
+        % odor events are in Channel1:
+        OdorTimestamps = [Events.Channel1.On Events.Channel1.Off];
+        % delete 1st entry - extra odor on/off from DAC reset (2022 change):
+        OdorTimestamps(1,:) = [];
+        
+    else % for experiments before 2022
+        TrialTimestamps(1,:) = []; % delete first entry - just an empty trigger
+    end
+    
+    % Sanity check - make sure number of TTLs are matching number of trials
+    if ExpectedNTrials ~= length(TrialTimestamps)
+        disp(['error in # of Trial TTLs in session ', stimfilename{i}])
+    end 
+    if ExpectedNTrials ~= length(OdorTimestamps)
+        disp(['error in # of Odor TTLs in session ', stimfilename{i}])
+    end
     
     % adjust for clock offset between open ephys (events) and kilosort (spike times)
     [offset] = AdjustClockOffset(filenameKS); %read 1st timestamps
@@ -118,6 +139,7 @@ for i = 1: length(myKsDir) %loop through each rec file
             goodcluster(mycluster).spikes = goodspiketimes; %store spikes in trial
             goodcluster(mycluster).stimulus = StimList; %store odor info
             goodcluster(mycluster).settings = StimTime; %store trial setting info
+            goodcluster(mycluster).repeats = Nrepeats; %store number of repeats
         end
     
     end

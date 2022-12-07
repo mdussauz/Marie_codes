@@ -1,9 +1,14 @@
 function []= plotConcResponseMatrix_v2(smoothPSTH)
 %written by MD
 
+global prestim
+global odorstim
+global poststim
+
+firstbin = -prestim/1000;
+lastbin = (odorstim+poststim)/1000;
+
 firingRatesAverage = nanmean(smoothPSTH,5);
-firstbin = -6;
-lastbin = 4;
 
 %% Reponse Matrix for each concentration and each odor
 for whatsmell = 1:5
