@@ -58,7 +58,7 @@ for t = 1:size(CUMCUBEPre,1)
                 tic
                 X = xtrain(CellId,:)';
                 Xtest = xtest(CellId,:)';
-                Xtest_mus = xtest_mus(CellId,:)';
+                
                 for k = 1:ncategory
                     Y = Output(k,:)';
                     SVMModel = fitcsvm(X,Y,'Standardize',true,'KernelFunction','Poly',...
@@ -97,6 +97,9 @@ end
 colormap('jet')
 
 figure;
-
-
+imagesc(squeeze(mean(xx(:,:,:,:),[3 4]))',[0 1])
+axis('square');
+xlim([2.5 20.5])
+set(gca,'TickDir','out')
+colormap('jet')
 end 

@@ -1,4 +1,6 @@
 function ConcInvariantClassifier(smoothPSTH)
+% Concentration invariant odor recognition: we trained the classifier to 
+% assign odor identity irrespective of concentration. 
 %%
 temp=smoothPSTH(:,:,:,:,3:7);
 temp = reshape(temp,[size(smoothPSTH,1),20,10000,5]);

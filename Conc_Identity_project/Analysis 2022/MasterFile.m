@@ -8,7 +8,7 @@
 
 %% Specify what region and what mouse (all or specific one)
 BrainRegion = 'AON'; % choices: AON or APC
-Mouse = 'all'; % choices: all, E2, E3, or E6
+Mouse = 'E3'; % choices: all, E2, E3, or E6
 WhatExp = 'Conc'; %choices: Conc or Id
 
 %% -- Extract info about recording sessions
