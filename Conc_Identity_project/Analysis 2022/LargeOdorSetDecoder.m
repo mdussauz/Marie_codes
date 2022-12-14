@@ -1,4 +1,4 @@
-function LargeOdorSetDecoder(smoothPSTH)
+function [ANSWER_Pre] = LargeOdorSetDecoder(smoothPSTH)
 % Discrimination across a larger (16) odor set: we trained classifiers to 
 % perform binary odor discriminations of a target odorant from an 
 % increasing number (1 to 15) of non-target odorant.
@@ -54,7 +54,7 @@ end
 end 
 
 %% ---
-%% MAIN FUNCTION
+%% SUB FUNCTION
 function [Results] = SVM_OdorIdentifierLargeOdor(CUMCUBEPre,Type,doPlot)
 
 Results = struct('Params',{},'TruePos',{});

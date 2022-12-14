@@ -1,4 +1,4 @@
-function OdorGeneralizer(smoothPSTH)
+function [GENERAL_PERF_Pre] = OdorGeneralizer(smoothPSTH)
 % Generalization to a novel concentration: after odor identity was learned 
 % from a test set of concentration, we trained the classifier to identify 
 % the odorant (one of a total five possibilities) by learning on three out 
@@ -82,13 +82,14 @@ end
 
 AONperf_pre = squeeze(nanmean(GENERAL_PERF_Pre,3));
 
-xx = squeeze(nanmean(GENERAL_PERF_Pre,4));
+% Take mean across boots:
+xx = squeeze(nanmean(GENERAL_PERF_Pre,4)); %new dim: time x cell iteration x test x odor or rep: need to check! 
 
 figure;
 figCount = 1;
 for j = 1:5
     subplot(3,2,figCount);
-    imagesc(squeeze(mean(xx(:,:,:,j),3))',[0 1])
+    imagesc(squeeze(mean(xx(:,:,:,j),3))',[0 1]) %mean across test 
     axis('square');
     figCount = figCount+1;
     xlim([2.5 20.5])
@@ -97,7 +98,7 @@ end
 colormap('jet')
 
 figure;
-imagesc(squeeze(mean(xx(:,:,:,:),[3 4]))',[0 1])
+imagesc(squeeze(mean(xx(:,:,:,1:4),[3 4]))',[0 1]) %mean across test and odor 1:4 (ignoring oil)
 axis('square');
 xlim([2.5 20.5])
 set(gca,'TickDir','out')

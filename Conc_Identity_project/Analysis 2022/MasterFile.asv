@@ -76,4 +76,4 @@ OdorGeneralizer(smoothPSTH)
 LargeOdorSetDecoder(smoothPSTH)
 
 %% Run Concentration Invariant Classifier(smoothPSTH)
-[incasefml] = ConcInvariantClassifier(smoothPSTH);
+ConcInvariantClassifier(smoothPSTH)

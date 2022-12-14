@@ -1,4 +1,4 @@
-function [GENERAL_PERF_Pre] = ConcInvariantClassifier(smoothPSTH)
+function [] = ConcInvariantClassifier(smoothPSTH)
 % Concentration invariant odor recognition: we trained the classifier to 
 % assign odor identity irrespective of concentration. 
 %%
@@ -97,7 +97,7 @@ figure;
 figCount = 1;
 for j = 1:5
     subplot(5,2,figCount);
-    imagesc(squeeze(mean(GENERAL_PERF_Pre(:,:,:,j),3))',[0 1]) %mean across test
+    imagesc(squeeze(mean(GENERAL_PERF_Pre(:,:,:,j),3))',[0 1])
     %     axis('square');
     figCount = figCount+1;
     subplot(5,2,figCount);
@@ -105,10 +105,8 @@ for j = 1:5
     %     axis('square');
     figCount = figCount+1;
 end
-colormap('jet')
 
 figure; 
-imagesc(squeeze(mean(GENERAL_PERF_Pre(:,:,:,j),[3 4]))',[0 1]) %mean across test and odor
-colormap('jet')
+imagesc(squeeze(mean(GENERAL_PERF_Pre(:,:,:,j),3))',[0 1])
 
 end
