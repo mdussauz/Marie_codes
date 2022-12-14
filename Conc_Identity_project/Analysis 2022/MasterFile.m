@@ -54,6 +54,11 @@ end
 %% Plotting Conc responses
 plotConcResponseMatrix_v2(smoothPSTH);
 
+%% Plotting Conc z scored responses
+plotZScoredOdorConcMatrix_v3(smoothPSTH);
+
+%% Plotting Conc responses with respect to oil
+plotOilZScoredOdorConcMatrix(smoothPSTH)
 %% Run dPCA
 %[W, explVar, whichMarg] = RundPCA(smoothPSTH); %with oil and all conc
 %[W, explVar, whichMarg] = RundPCA(smoothPSTH(:,1:4,:,:,:)); %without oil and all conc
