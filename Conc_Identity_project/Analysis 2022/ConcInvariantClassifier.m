@@ -100,15 +100,15 @@ for j = 1:5
     imagesc(squeeze(mean(GENERAL_PERF_Pre(:,:,:,j),3))',[0 1]) %mean across test
     %     axis('square');
     figCount = figCount+1;
-    subplot(5,2,figCount);
-    imagesc(squeeze(mean(GENERAL_PERF_Mus(:,:,:,j),3))',[0 1])
-    %     axis('square');
-    figCount = figCount+1;
+%     subplot(5,2,figCount);
+%     imagesc(squeeze(mean(GENERAL_PERF_Mus(:,:,:,j),3))',[0 1])
+%     %     axis('square');
+%     figCount = figCount+1;
 end
 colormap('jet')
 
 figure; 
-imagesc(squeeze(mean(GENERAL_PERF_Pre(:,:,:,j),[3 4]))',[0 1]) %mean across test and odor
+imagesc(squeeze(mean(GENERAL_PERF_Pre(:,:,:,1:4),[3 4]))',[0 1]) %mean across test and odor
 colormap('jet')
 
 end

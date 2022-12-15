@@ -26,19 +26,11 @@ switch Exp
         gridX = 4;
         gridY = 4;
 
-    case '220525_Conc_Blank'
-        2022-05-25_08-58-10_Conc_Blank
-
+        case '220525_Conc_Blank'
     case '220525_Id_Blank'
 
         2022-05-25_08-58-10_16Odor_Blank
 
-    case '220525_Conc_Oil'
-
-        2022-05-25_08-58-10_Conc_Oil
-
-    case '220525_Id_Oil'
-        2022-05-25_08-58-10_16Odor_Oil
     
 end
 
