@@ -1,15 +1,29 @@
 function [handles] = LoadKilosortDefaultsMD(handles, Username)
 
-KiloSortPath = '/opt/KiloSort/';
-addpath(genpath(KiloSortPath)) % path to kilosort folder
-addpath(genpath('/opt/npy-matlab/')) % path to npy-matlab scripts
-
-% default settings
-handles.FilePaths.Data(1) = {'/mnt/grid-hs/pgupta/EphysData'}; % Root storage
-handles.FilePaths.Data(2) = {'PCX4'}; % local read/write folder
-handles.FilePaths.Data(3) = {'/mnt/data/Sorted/'}; % local read/write folder
-handles.ServerPath = '/mnt/grid-hs/mdussauz/Smellocator/Processed/Ephys';
-handles.YourConfigFile = fullfile(KiloSortPath,'StandardConfig_Albeanu.m');
+if strcmp(computer, 'PCWIN64') % Marie's remote desktop 
+    KiloSortPath = 'C:\Users\Marie\Documents\Code\KiloSort\';
+    addpath(genpath(KiloSortPath)) % path to kilosort folder
+    addpath(genpath('C:\Users\Marie\Documents\Code\npy-matlab\')) % path to npy-matlab scripts
+    
+        % default settings
+    handles.FilePaths.Data(1) = {'Z:\mdussauz\ephysdata\Conc_id_exp'}; % Root storage
+    handles.FilePaths.Data(2) = {'E3'}; % local read/write folder
+    handles.FilePaths.Data(3) = {'C:\Users\Marie\Documents\data\Sorted\'}; % local read/write folder
+    handles.ServerPath = '/mnt/grid-hs/mdussauz/Smellocator/Processed/Ephys';
+    handles.YourConfigFile = fullfile(KiloSortPath,'StandardConfig_Albeanu.m');
+    
+else % Marie's work linux machine
+    KiloSortPath = '/opt/KiloSort/';
+    addpath(genpath(KiloSortPath)) % path to kilosort folder
+    addpath(genpath('/opt/npy-matlab/')) % path to npy-matlab scripts
+    
+    % default settings
+    handles.FilePaths.Data(1) = {'/mnt/grid-hs/mdussauz/ephysdata'}; % Root storage
+    handles.FilePaths.Data(2) = {'PCX4'}; % local read/write folder
+    handles.FilePaths.Data(3) = {'/mnt/data/Sorted/'}; % local read/write folder
+    handles.ServerPath = '/mnt/grid-hs/mdussauz/Smellocator/Processed/Ephys';
+    handles.YourConfigFile = fullfile(KiloSortPath,'StandardConfig_Albeanu.m');
+end 
 
 % spike detection settings
 handles.init_from_data = 0; % generate template spikes from data
@@ -125,6 +139,14 @@ switch Username
         handles.FilePaths.Data(1) = {'/mnt/grid-hs/pgupta/EphysData/odor_location'};
         handles.FilePaths.Data(2) = {'E2'}; % change name of mouse here: E2 or E3
         handles.recording_settings.Data(1) = 32;
+        handles.InactiveChannels.String = mat2str([]);
+        handles.IgnoreChannels.String = mat2str([]);
+        
+    case {'Test_Machine_APC_Q'}
+        %handles.FilePaths.Data(1) = {'/mnt/grid-hs/mdussauz/ephysdata/Conc_id_exp'};
+        handles.FilePaths.Data(1) = {'Z:\mdussauz\ephysdata\Conc_id_exp'};
+        handles.FilePaths.Data(2) = {'Q9'}; % change name of mouse here
+        handles.recording_settings.Data(1) = 40;
         handles.InactiveChannels.String = mat2str([]);
         handles.IgnoreChannels.String = mat2str([]);
     
