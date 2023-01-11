@@ -1,4 +1,4 @@
-function ConcentrationPredictor(smoothPSTH)
+function [GENERAL_PERF_Pre] = ConcentrationPredictor(smoothPSTH)
 %%
 temp=smoothPSTH(:,:,:,:,3:7);
 temp = reshape(temp,[size(smoothPSTH,1),20,10000,5]);
