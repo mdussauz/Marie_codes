@@ -29,19 +29,13 @@ for t = 1:size(CUMCUBEPre,1)
     x = reshape(RESPCUBE_Pre,[ncells 5 4 4]); 
     x = zscore(x(:,:),0,2);
     x = reshape(x,[ncells 5 4 4]);
-    
-    RESPCUBE_Mus = squeeze(CUMCUBEPre(t,:,:,1:4));
-    x_mus = reshape(RESPCUBE_Mus,[ncells 5 4 4]); 
-    x_mus = zscore(x_mus(:,:),0,2);
-    x_mus = reshape(x_mus,[ncells 5 4 4]);
-
-    
+       
     for test = 1:4
         trainset = setdiff(1:4,test);
         xtrain = squeeze(x(:,:,:,trainset));
 
         xtest = squeeze(x(:,:,:,test));
-        xtest_mus = squeeze(x_mus(:,:,:,test));
+
         
         [nroi,ncategory,ndil,nrep] = size(xtrain);
         nstim = ncategory*ndil;
@@ -62,7 +56,7 @@ for t = 1:size(CUMCUBEPre,1)
                 tic
                 X = xtrain(CellId,:)';
                 Xtest = xtest(CellId,:)';
-                Xtest_mus = xtest_mus(CellId,:)';
+
                 for k = 1:ncategory
                     Y = Output(k,:)';
                     template = templateSVM('Standardize',true);
@@ -73,17 +67,13 @@ for t = 1:size(CUMCUBEPre,1)
                     [a,~]= predict(SVMModel,Xtest(:,:));
                     label(k,:) = a;
 
-                    [a,~]= predict(SVMModel,Xtest_mus(:,:));
-                    label_mus(k,:) = a;
-
                 end
                 PERF(boot,1) = corr2(label,Output(:,1:20));
-                PERF(boot,2) = corr2(label_mus,Output(:,1:20));
+
             end
-%             GENERAL_PERF_Pre(t,CellIter,test) = mean(PERF(:,1));
-%             GENERAL_PERF_Mus(t,CellIter,test) = mean(PERF(:,2));
+
             GENERAL_PERF_Pre(t,CellIter,test,:) = squeeze(PERF(:,1));
-            GENERAL_PERF_Mus(t,CellIter,test,:) = squeeze(PERF(:,2));
+
         end
     end
     t
@@ -91,24 +81,24 @@ end
 %% PLOTTING FOR DECODERS
 figure;hold on;
 temp1 = reshape(GENERAL_PERF_Pre,[size(GENERAL_PERF_Pre,1) size(CellNum,2) 4*nboot]);
-temp2 = reshape(GENERAL_PERF_Mus,[size(GENERAL_PERF_Pre,1) size(CellNum,2) 4*nboot]);
+%temp2 = reshape(GENERAL_PERF_Mus,[size(GENERAL_PERF_Pre,1) size(CellNum,2) 4*nboot]);
 
 cellNumIdx = 42;
 shadedErrorBar(1:size(GENERAL_PERF_Pre,1),nanmean(squeeze(temp1(:,cellNumIdx,:)),2),...
     nanstd(squeeze(temp1(:,cellNumIdx,:)),0,2)./sqrt(4*nboot),'LineProps','--k')
-shadedErrorBar(1:size(GENERAL_PERF_Pre,1),nanmean(squeeze(temp2(:,40,:)),2),...
-    nanstd(squeeze(temp2(:,cellNumIdx,:)),0,2)./sqrt(4*nboot),'LineProps','--r')
+% shadedErrorBar(1:size(GENERAL_PERF_Pre,1),nanmean(squeeze(temp2(:,40,:)),2),...
+%     nanstd(squeeze(temp2(:,cellNumIdx,:)),0,2)./sqrt(4*nboot),'LineProps','--r')
 
 %
 figure;hold on;
 temp1 = reshape(GENERAL_PERF_Pre,[20 size(CellNum,2) 4*nboot]);
-temp2 = reshape(GENERAL_PERF_Mus,[20 size(CellNum,2) 4*nboot]);
+%temp2 = reshape(GENERAL_PERF_Mus,[20 size(CellNum,2) 4*nboot]);
 
 TimeBinIdx = 8;
 shadedErrorBar(1:size(CellNum,2),nanmean(squeeze(temp1(TimeBinIdx,:,:)),2),...
     nanstd(squeeze(temp1(TimeBinIdx,:,:)),0,2)./sqrt(12),'LineProps','-k')
-shadedErrorBar(1:size(CellNum,2),nanmean(squeeze(temp2(TimeBinIdx,:,:)),2),...
-    nanstd(squeeze(temp2(TimeBinIdx,:,:)),0,2)./sqrt(12),'LineProps','--r')
+% shadedErrorBar(1:size(CellNum,2),nanmean(squeeze(temp2(TimeBinIdx,:,:)),2),...
+%     nanstd(squeeze(temp2(TimeBinIdx,:,:)),0,2)./sqrt(12),'LineProps','--r')
 
 figure;imagesc(squeeze(nanmean(temp1,3))',[0 1]);colormap('jet')
 

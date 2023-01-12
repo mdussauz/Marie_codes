@@ -70,7 +70,7 @@ plotOilZScoredOdorConcMatrix(smoothPSTH)
 PlotdPCA(smoothPSTH(:,1:4,2:4,:,:), W, explVar, whichMarg) %without oil and 3 highest conc
 
 %% Run odor generalizer decoder - generalization to novel concentration
-OdorGeneralizer(smoothPSTH)
+[GENERAL_PERF] = OdorGeneralizer(smoothPSTH);
 
 %% Run large odor set decoder 
 LargeOdorSetDecoder(smoothPSTH)
@@ -78,5 +78,9 @@ LargeOdorSetDecoder(smoothPSTH)
 %% Run Concentration Invariant Classifier(smoothPSTH)
 [incasefml] = ConcInvariantClassifier(smoothPSTH);
 
+%% Run identity and concentrtaion calling classifier 
+[GENERAL_PERF] = IdentityAndConcentrationCalling(smoothPSTH);
+
 %% Run Concentration predictor 
 [GENERAL_PERF_Pre] = ConcentrationPredictor(smoothPSTH);
+

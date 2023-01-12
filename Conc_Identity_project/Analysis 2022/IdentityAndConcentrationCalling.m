@@ -1,50 +1,45 @@
-function IdentityAndConcentrationCalling(smoothPSTH)
+function [GENERAL_PERF] = IdentityAndConcentrationCalling(smoothPSTH)
 % Odor Identity and concentration calling: similar to the generalization 
 % across concentrations except that the classifier neuron for a given odor 
 % has to fire in proportion (log scale) to the concentration without 
 % explicitly requiring invariance across concentrations of the same odorant.
 
-PSTH = smoothPSTH;
 
 %% Making cumulative PSTH over relevant time period
 % We want to get classification accuracy as a function
 % of integration time using an ‘expanding window’ 
 % consisting of feature vectors with increasing numbers of 200 ms bins 
 % starting 1s before odor onset and for up to 1s after odor offset
-
 % This section should output a matrix with 20 timewindows in dim 1
+temp=smoothPSTH(:,:,:,:,3:7);
+temp = reshape(temp,[size(smoothPSTH,1),20,10000,5]);
+bins = 0:0.2:4;
+Fs = 1000;
 
-for whichcluster = 1:Nneurons % loop through each neuron 
-    for whichodor = 1:Nodor %for each odor identity
-        for whichloc = 1: Nloc % for each location
-            for whichrep = 1:Nrep % for each repeat 
-                time_ind = 1;
-                t_min = 9000; %starts at 9s = 1s before odor period % in pre odor period
-                t_max = 13000;% ends at 13s = 1s after odor period % in post odor period
-                for t = (t_min+200):200:t_max %we want to average responses over expanding window 
-                    tempPSTH = squeeze(PSTH(whichcluster,whichodor,whichloc,:,whichrep)); % for one cluster, all times for one type% for one cluster, all times for one type
-                    FR_mean_in_bin = mean(tempPSTH(t_min:t));
-                    cumulativePSTH(time_ind,whichcluster,whichodor,whichloc,whichrep) = FR_mean_in_bin;
-                    t = t+200;
-                    time_ind = time_ind+1;
-                end
-            end
-        end
-        
-    end
-    
+CUMCUBEPre = [];
+for k = 1:length(bins)-1
+    start = Fs*(6 + bins(1)); %used to be 10 instead of 6
+    stop = Fs*(6+bins(k+1)); %used to be 10 instead of 6
+
+    CUMCUBEPre(k,:,:,:) = squeeze(nanmean(temp(:,:,start:stop,:),3));
 end
+%cumulativePSTH(time_ind,whichcluster,whichodor,whichloc,whichrep) = FR_mean_in_bin;
+                    
 
 %% DECODER
 %%
 %cumulativePSTH dimensions are: time x units x odors x locations x repeats
-response_matrix = cumulativePSTH(:,:,odor_to_keep,loc_to_keep,:); %based on user specified params
+response_matrix = CUMCUBEPre;
+size(response_matrix)
+
 
 %getting relevant variables `
 ncells = size (response_matrix,2);
 CellNum = 10:5:ncells; %performance evaluated for different numbers of neurons in steps of five.
-NlocFinal = length(loc_to_keep); %number of locations to decode
-NodorFinal = length(odor_to_keep);
+NlocFinal = 4; %number of locations to decode
+NodorFinal = 5;
+Nrep = size(response_matrix,4);
+
 t_start = 1;
 t_end = size (response_matrix,1);
 
@@ -52,11 +47,12 @@ Nboot = 10; %number of bootstraps
 
 GENERAL_PERF = zeros(t_end,length(CellNum),Nrep,Nboot); % classifier output: time points X number of neuron X repeats X bootstraps
 
-for t = t_start:t_end %for a specific time
-    t
+for t = t_start:t_end %for each 200 ms bin
+    disp(t)
     x = squeeze(response_matrix(t,:,:,:,:)); % units x odor x loc x repeats
     x = zscore(x(:,:),0,2); %z-scoring along odor identity to avoid overfitting of neurons with high FR
     x = reshape(x,[ncells NodorFinal NlocFinal Nrep]);
+    size(x)
     
   
     for test = 1:Nrep %Cross-validated performance will be evaluated across held-out trials - here 1 repeat
@@ -79,9 +75,9 @@ for t = t_start:t_end %for a specific time
         Output = repmat(Output,[1 nTrainrep]); % desired classifier target
         %Dimensions are odors x number of stimuli 
 
-        for CellIter = 1:length(CellNum) % for different number of cells
+        for CellIter = 1:length(CellNum) % for increasing number of cells with step of 5
             PERF = zeros(Nboot,1);            
-            for boot = 1:Nboot %bootstrapping - picking randomly 10 different times
+            for boot = 1:Nboot %bootstrapping - picking cells randomly with replacement 10 different times
                 CellId = randperm(ncells,CellNum(CellIter)); % new vector of cells on which train/test will be performed
                 X = xtrain(CellId,:)';
                 Xtest = xtest(CellId,:)';
@@ -115,7 +111,6 @@ for t = t_start:t_end %for a specific time
 
         end
     end
-    t
 end
 
 
