@@ -7,8 +7,8 @@
 % taking into account structure of Diego's photometry data
 
 %% Specify what region and what mouse (all or specific one)
-BrainRegion = 'APC'; % choices: AON or APC
-Mouse = 'E6'; % choices: all, E2, E3, or E6
+BrainRegion = 'AON'; % choices: AON or APC
+Mouse = 'E3'; % choices: all, E2, E3, or E6
 WhatExp = 'Conc'; %choices: Conc or Id
 
 %% -- Extract info about recording sessions

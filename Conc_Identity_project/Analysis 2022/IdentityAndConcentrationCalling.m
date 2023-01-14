@@ -5,84 +5,86 @@ function [GENERAL_PERF] = IdentityAndConcentrationCalling(smoothPSTH)
 % explicitly requiring invariance across concentrations of the same odorant.
 
 
-%% Making cumulative PSTH over relevant time period
+%% Getting relevant variables 
+global prestim
+global odorstim
+global poststim
+
+if ~exist('prestim', 'var')
+    %settings for 2022 experiments: 
+    prestim = 6000; 
+    odorstim = 2000;
+    poststim = 2000; 
+end 
+
+[ncells,nodor,nconc,timepoints,nrep] = size(smoothPSTH);
+nstim = nodor * nconc; 
+ 
+%% Computing feature vector of mean response over expanding windows in relevant time period
 % We want to get classification accuracy as a function
 % of integration time using an ‘expanding window’ 
 % consisting of feature vectors with increasing numbers of 200 ms bins 
-% starting 1s before odor onset and for up to 1s after odor offset
-% This section should output a matrix with 20 timewindows in dim 1
-temp=smoothPSTH(:,:,:,:,3:7);
-temp = reshape(temp,[size(smoothPSTH,1),20,10000,5]);
-bins = 0:0.2:4;
-Fs = 1000;
+% starting 200ms before odor onset and for up to the end of the post-stim
+% period
 
-CUMCUBEPre = [];
-for k = 1:length(bins)-1
-    start = Fs*(6 + bins(1)); %used to be 10 instead of 6
-    stop = Fs*(6+bins(k+1)); %used to be 10 instead of 6
+first_bin = -200;
+last_bin = odorstim + poststim; % in ms - odor window + post-stim window
 
-    CUMCUBEPre(k,:,:,:) = squeeze(nanmean(temp(:,:,start:stop,:),3));
+temp = reshape(smoothPSTH,[ncells,nstim,timepoints,nrep]);
+bins = first_bin:200:last_bin; % 200ms window bins
+
+nbins = length(bins)-1;
+
+response_matrix = zeros(nbins, ncells, nstim, nrep); %pre-allocating for speed 
+for k = 1:nbins
+    start = prestim + bins(1); 
+    stop = prestim + bins(k+1); 
+
+    response_matrix(k,:,:,:) = squeeze(nanmean(temp(:,:,start:stop,:),3));
+    %dimensions are: time x units x odors x locations x repeats
 end
-%cumulativePSTH(time_ind,whichcluster,whichodor,whichloc,whichrep) = FR_mean_in_bin;
                     
 
 %% DECODER
-%%
-%cumulativePSTH dimensions are: time x units x odors x locations x repeats
-response_matrix = CUMCUBEPre;
-size(response_matrix)
-
-
-%getting relevant variables `
-ncells = size (response_matrix,2);
 CellNum = 10:5:ncells; %performance evaluated for different numbers of neurons in steps of five.
-NlocFinal = 4; %number of locations to decode
-NodorFinal = 5;
-Nrep = size(response_matrix,4);
+nboot = 10; %number of bootstraps 
+GENERAL_PERF = zeros(nbins,length(CellNum),nrep,nboot); % classifier output: time points X number of neuron X repeats X bootstraps
 
-t_start = 1;
-t_end = size (response_matrix,1);
-
-Nboot = 10; %number of bootstraps 
-
-GENERAL_PERF = zeros(t_end,length(CellNum),Nrep,Nboot); % classifier output: time points X number of neuron X repeats X bootstraps
-
-for t = t_start:t_end %for each 200 ms bin
+for t = 1:nbins %for each 200 ms bin
     disp(t)
     x = squeeze(response_matrix(t,:,:,:,:)); % units x odor x loc x repeats
     x = zscore(x(:,:),0,2); %z-scoring along odor identity to avoid overfitting of neurons with high FR
-    x = reshape(x,[ncells NodorFinal NlocFinal Nrep]);
-    size(x)
+    x = reshape(x,[ncells nodor nconc nrep]);
     
   
-    for test = 1:Nrep %Cross-validated performance will be evaluated across held-out trials - here 1 repeat
+    for test = 1:nrep %Cross-validated performance will be evaluated across held-out trials - here 1 repeat
         % Defining the training and test sets 
         trainset = setdiff(1:4,test); %here pick 3 out of 4 repeats as training set
         xtrain = squeeze(x(:,:,:,trainset));
         xtest = squeeze(x(:,:,:,test)); % test set is the remaining repeat
         
         [nroi,ncategory,ndil,nreptrain] = size(xtrain);
-        nstim = NodorFinal*NlocFinal; %number of stimuli (number of odors x number of locations)
+        nstim = nodor*nconc; %number of stimuli (number of odors x number of locations)
         nTrainrep = nreptrain; %number of repeats in training set  
 
         % Creating the objective matrix (desired classifier target)
-        Output = zeros(NodorFinal,nstim);
-        Output_cross = zeros(NodorFinal,nstim,nreptrain);
+        Output = zeros(nodor,nstim);
+        Output_cross = zeros(nodor,nstim,nreptrain);
  
-        for k = 1:NodorFinal
-            Output(k,k:NodorFinal:end) = [1:1:NlocFinal];
+        for k = 1:nodor
+            Output(k,k:nodor:end) = [1:1:nconc];
         end
         Output = repmat(Output,[1 nTrainrep]); % desired classifier target
         %Dimensions are odors x number of stimuli 
 
         for CellIter = 1:length(CellNum) % for increasing number of cells with step of 5
-            PERF = zeros(Nboot,1);            
-            for boot = 1:Nboot %bootstrapping - picking cells randomly with replacement 10 different times
+            PERF = zeros(nboot,1);            
+            for boot = 1:nboot %bootstrapping - picking cells randomly with replacement 10 different times
                 CellId = randperm(ncells,CellNum(CellIter)); % new vector of cells on which train/test will be performed
                 X = xtrain(CellId,:)';
                 Xtest = xtest(CellId,:)';
 
-                for k = 1:NodorFinal % for each odor 
+                for k = 1:nodor % for each odor 
                     Y = Output(k,:)'; %target output for that specific odor 
                     template = templateSVM('Standardize',true); % define the model
                     % returns a support vector machine learner template 
@@ -115,16 +117,16 @@ end
 
 
 %% PLOTS
-temp = reshape(GENERAL_PERF,[t_end size(CellNum,2) Nrep*Nboot]);
+temp = reshape(GENERAL_PERF,[nbins size(CellNum,2) nrep*nboot]);
 %%
 % Performance across time for all cells
-figure(1)
+figure()
 
 subplot(1,2,1)
 time_mean = nanmean(squeeze(temp(:,end,:)),2); %mean at each timepoint across cross-validations for all cells
 time_std = nanstd(squeeze(temp(:,end,:)),0,2); %std at each timepoint across cross-validations for all cells
 
-shadedErrorBar(1*0.2:0.2:20*0.2,time_mean*100,(time_std*100)./sqrt(Nrep*Nboot))
+shadedErrorBar(bins(1:nbins)/1000,time_mean*100,(time_std*100)./sqrt(nrep*nboot))
 xlabel('Time (s)')
 ylabel('Classifier performance (%)')
 hold on; 
@@ -138,8 +140,8 @@ timepoint = 10; %in sec performance at time to be plotted for increasing number 
 subplot(1,2,2)
 cell_mean = nanmean(squeeze(temp(timepoint,:,:)),2); %mean for different cell number across cross-validations at one timepoint
 cell_std = nanstd(squeeze(temp(timepoint,:,:)),0,2); %std for different cell number across cross-validations at one timepoint
-shadedErrorBar(1*5:5:size(CellNum,2)*5,cell_mean*100,...
-    (cell_std*100)./sqrt(Nrep*Nboot))
+shadedErrorBar(CellNum,cell_mean*100,...
+    (cell_std*100)./sqrt(nrep*nboot))
 
 xlabel('Number of neurons')
 ylabel('Classifier performance (%)')
@@ -147,15 +149,17 @@ set(gca,'TickDir','out')
 
 
 %%
-figure(2)
+figure()
 % median performance across both number of cells and time
 subplot(1,2,1)
 imagesc(median(temp,3)',[0 1]) %median across cross-validations
 axis('square');colormap('jet'); 
-xticks([5 10 15 20])
-xticklabels({'1','2','3','4'})
-yticks([2 4 6 8 10])
-yticklabels({'10','20','30','40','50'})
+xticks(5:5:nbins)
+x_labels = 1:last_bin/1000;
+xticklabels(string(x_labels))
+yticks(2:2:CellNum(end))
+y_labels = 10:5:CellNum(end)*5;
+yticklabels(string(y_labels))
 set(gca,'TickDir','out')
 
 xlabel('Time(s)')
@@ -172,13 +176,14 @@ imagesc(mean(xx,3)',[0 1])
 axis('square');colormap('jet')
 xticks([5 10 15 20])
 xticklabels({'1','2','3','4'})
-yticks([2 4 6 8 10])
-yticklabels({'10','20','30','40','50'})
+yticks(2:2:CellNum(end))
+y_labels = 10:5:CellNum(end)*5;
+yticklabels(string(y_labels))
 set(gca,'TickDir','out')
 
 xlabel('Time(s)')
 ylabel('Number of neurons')
-xline(5, 'w--',{'odor','on'},'FontSize',8)
-xline(15, 'w--', {'odor','off'},'FontSize',8)
+% xline(5, 'w--',{'odor','on'},'FontSize',8)
+% xline(15, 'w--', {'odor','off'},'FontSize',8)
 c = colorbar; c.Label.String = 'Classifier performance';
 end 

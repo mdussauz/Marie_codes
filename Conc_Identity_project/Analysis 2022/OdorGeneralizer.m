@@ -12,7 +12,7 @@ global poststim
 
 if ~exist('prestim', 'var')
     %settings for 2022 experiments: 
-    prestim = 6000; 
+    prestim = 6000;
     odorstim = 2000;
     poststim = 2000; 
 end 
