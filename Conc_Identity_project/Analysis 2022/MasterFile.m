@@ -59,6 +59,9 @@ plotZScoredOdorConcMatrix_v3(smoothPSTH);
 
 %% Plotting Conc responses with respect to oil
 plotOilZScoredOdorConcMatrix(smoothPSTH)
+
+%% Plot response trend curves for all pop (fig3) and exc pop (fig1) and inh pop (fig2)
+PlotRespondTrend_v2(smoothPSTH)
 %% Run dPCA
 %[W, explVar, whichMarg] = RundPCA(smoothPSTH); %with oil and all conc
 %[W, explVar, whichMarg] = RundPCA(smoothPSTH(:,1:4,:,:,:)); %without oil and all conc
