@@ -7,8 +7,14 @@ datapath = Paths.Local.Behavior_processed;
 MySession = fullfile(datapath,SessionPath);
 
 %% get the processed data loaded
-[TracesOut, ColNames, TrialInfo, SingleUnits, TTLs, ...
-    ReplayTTLs, SampleRate, TimestampAdjuster, PassiveTracesOut, StartStopIdx, OpenLoop] = LoadProcessedDataSession(MySession);
+
+load(MySession, 'Traces', 'PassiveReplayTraces', 'TrialInfo', ...
+                'SingleUnits', 'TTLs', 'ReplayTTLs', 'TuningTTLs', ...
+                'SampleRate', 'startoffset', 'TargetZones', 'errorflags');
+
+[TracesOut, ColNames, TrialInfo, ~, ~, ...
+     ~, ~, TimestampAdjuster, PassiveTracesOut, StartStopIdx, OpenLoop] = LoadProcessedDataSession(MySession); %this function gets PassiveTracesOut = [] for some reason
+                                                                                                               %TrialInfo of this functions contains target zone entry 
 
 %% sniff trace
 %sniffs = TracesOut(:,3);
@@ -30,6 +36,29 @@ for i = 1:numel(pks)-1
         Loc(i,:) = [pkloc(i) vlloc(thispkvalley)];
     else
         keyboard;
+    end
+end
+
+%% trying to process replay sniff traces
+for replaytrials = 1:length(PassiveReplayTraces.Sniffs)
+    PassiveReplayTraces.Sniffs{1,replaytrials} = filtfilt(b,a,PassiveReplayTraces.Sniffs{1,replaytrials});
+
+    % find peaks
+    [pks,pkloc] = findpeaks(PassiveReplayTraces.Sniffs{1,replaytrials},'MinPeakProminence',0.2,'MinPeakDistance',SampleRate*0.05);
+    % find valleys
+    [vls,vlloc] = findpeaks(-PassiveReplayTraces.Sniffs{1,replaytrials},'MinPeakProminence',0.2,'MinPeakDistance',SampleRate*0.05);
+
+    % sanity checks
+    for i = 1:numel(pks)-1
+        % is there a unique valley
+        thispkvalley = intersect(find(vlloc>pkloc(i)),find(vlloc<pkloc(i+1)));
+        if numel(thispkvalley==1)
+            %Loc(i,:) = [pkloc(i) vlloc(thispkvalley)];
+            ReplayAlignedSniffs{replaytrials,1}{1,1}(i) = pkloc(i);
+            ReplayAlignedSniffs{replaytrials,2}{1,1}(thispkvalley) = vlloc(thispkvalley);
+        else
+            keyboard;
+        end
     end
 end
 
@@ -57,7 +86,7 @@ end
 %% Creating a  new field to facilitate use of UnitPlotter function on Halt Replay 
 ReplayInfo.Perturbation(find(ReplayInfo.Perturbed(:,1)==0),1) = {[]};
 ReplayInfo.Perturbation(find(ReplayInfo.Perturbed(:,1)==1),1) = {'Halt-Flip-Template'};
-%% Plot
+%% Plot closed loop vs active halt 
 figure;
 AlignTo = 6; 
 switch AlignTo
@@ -71,26 +100,65 @@ end
 
 %raster plot - example unit response to active halt and close loop
 whichUnit = 21; whichOdor = 1;
-subplot(3,3,[1 3]); hold on
+subplot(3,2,[1 3]); hold on
 [FRs, BinOffset, whichTZ] = ... 
-PlotHaltFlips(whichUnit, whichOdor, AlignedSpikes, Events, TrialInfo, AlignTo);
+PlotHaltFlipsMD(whichUnit, whichOdor, AlignedSpikes, Events, TrialInfo, AlignTo);
 set(gca,'XLim',myXlim);
 
 %psth plot - example unit response to active halt and close loop
-subplot(3,3,5); hold on
+subplot(3,2,5); hold on
 plot((1:size(FRs,2))*0.002+BinOffset/1000,FRs(1,:),'color',Plot_Colors('k'),'Linewidth',2);
 plot((1:size(FRs,2))*0.002+BinOffset/1000,FRs(2,:),'color',Plot_Colors('t'),'Linewidth',2);
 set(gca,'XLim',myXlim);
 
 %raster plot - SNIFFING
 whichUnit = 1;
-subplot(3,3,[2 4]); hold on
+subplot(3,2,[2 4]); hold on
 [SRs, BinOffset, whichTZ] = ... 
-PlotHaltFlips(whichUnit, whichOdor, AlignedSniffs, Events, TrialInfo, AlignTo);
+PlotHaltFlipsMD(whichUnit, whichOdor, AlignedSniffs, Events, TrialInfo, AlignTo);
 set(gca,'XLim',myXlim);
 
 %psth plot - SNIFFING 
-subplot(3,3,6); hold on
+subplot(3,2,6); hold on
+plot((1:size(SRs,2))*0.002+BinOffset/1000,SRs(1,:),'color',Plot_Colors('k'),'Linewidth',2);
+plot((1:size(SRs,2))*0.002+BinOffset/1000,SRs(2,:),'color',Plot_Colors('t'),'Linewidth',2);
+set(gca,'XLim',myXlim);
+
+%% Plot active vs passive halts
+figure;
+AlignTo = 6; 
+switch AlignTo
+    case {1,2,6}
+        myXlim = [-1.2 6];
+    case {3,4}
+        myXlim = [-5.2 1];
+    case 5
+        myXlim = [-2.2 5];
+end
+
+%raster plot - example unit response to active halt and close loop
+whichUnit = 21; whichOdor = 1;
+subplot(3,2,[1 3]); hold on
+[FRs, BinOffset, whichTZ] = ... 
+PlotHaltFlipsMD(whichUnit, whichOdor, AlignedSpikes, Events, TrialInfo, AlignTo);
+set(gca,'XLim',myXlim);
+
+%psth plot - example unit response to active halt and close loop
+subplot(3,2,5); hold on
+plot((1:size(FRs,2))*0.002+BinOffset/1000,FRs(1,:),'color',Plot_Colors('k'),'Linewidth',2);
+plot((1:size(FRs,2))*0.002+BinOffset/1000,FRs(2,:),'color',Plot_Colors('t'),'Linewidth',2);
+set(gca,'XLim',myXlim);
+
+%raster plot - SNIFFING
+whichUnit = 1;
+subplot(3,2,[2 4]); hold on
+[SRs, BinOffset, whichTZ] = ... 
+PlotHaltFlipsActivevsPassiveMD(whichUnit, whichOdor, ReplayAlignedSniffs, Events, ReplayInfo, AlignTo, AlignedSpikes, Events, TrialInfo);
+%PlotHaltFlipsActivevsPassiveMD(whichUnit, whichOdor, ReplayAlignedSniffs, ReplayEvents, ReplayInfo, AlignTo, AlignedSpikes, Events, TrialInfo);
+set(gca,'XLim',myXlim);
+
+%psth plot - SNIFFING 
+subplot(3,2,6); hold on
 plot((1:size(SRs,2))*0.002+BinOffset/1000,SRs(1,:),'color',Plot_Colors('k'),'Linewidth',2);
 plot((1:size(SRs,2))*0.002+BinOffset/1000,SRs(2,:),'color',Plot_Colors('t'),'Linewidth',2);
 set(gca,'XLim',myXlim);

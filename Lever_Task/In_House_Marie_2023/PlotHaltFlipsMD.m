@@ -1,4 +1,5 @@
 function [AlignedFRs, BinOffset, whichTZ] = PlotHaltFlipsMD(whichUnit, whichOdor, AlignedSpikes, Events, TrialInfo, AlignTo)
+
 % 
 whichodor = whichOdor;
 
@@ -12,11 +13,12 @@ perturbationTrials = sortrows(perturbationTrials,3);
 
 % get control trials
 % get the trial sorting order
-whichTrials = intersect(find(cellfun(@isempty, TrialInfo.Perturbation)), ...
+whichTrials = intersect(find(strcmp(TrialInfo.Perturbation(:,1),'Halt-Flip-Template')), ...
     find(TrialInfo.Odor==whichodor));
 whichTrials = intersect(whichTrials, find(TrialInfo.TargetZoneType==whichTZ));
 whichTrials = [whichTrials TrialInfo.TargetZoneType(whichTrials) TrialInfo.Duration(whichTrials)]; %#ok<AGROW>
 whichTrials = sortrows(whichTrials,3);
+
 
 plotting = whichUnit>0; % hack to use the same function for UnitViewer and for analysis
 whichUnit = abs(whichUnit);
