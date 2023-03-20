@@ -1,8 +1,11 @@
 %%TuningCurve comparisons for Replay
 
+%% for O8 - test
+SessionPath = 'O8\O8_20220704_r0_processed.mat';
+ChosenUnits =[];
 %% for O1
-SessionPath = 'O1/O1_20211012_r0_processed.mat';
-ChosenUnits = []; %MyUnits = [8 35 28 55 39]; 
+% SessionPath = 'O1/O1_20211012_r0_processed.mat';
+% ChosenUnits = []; %MyUnits = [8 35 28 55 39]; 
 
 %% for O3
 % SessionPath = 'O3/O3_20211005_r0_processed.mat';

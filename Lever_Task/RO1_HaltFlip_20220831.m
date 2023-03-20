@@ -1,7 +1,9 @@
-%% for O3
-SessionPath = 'O3/O3_20210927_r0_processed.mat';
-ChosenUnits = [15 17 18]; % 28 63 56]; %MyUnits = [8 35 28 55 39]; 
-%ChosenUnits = [];
+%% for O8 
+SessionPath = 'O8/O3_20220704_r0_processed.mat';
+% %% for O3
+% SessionPath = 'O3/O3_20210927_r0_processed.mat';
+% ChosenUnits = [15 17 18]; % 28 63 56]; %MyUnits = [8 35 28 55 39]; 
+% %ChosenUnits = [];
 
 %% DataExtraction
 if strcmp(computer, 'MACI64')
