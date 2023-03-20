@@ -78,9 +78,9 @@ for t = 1:nbins %for each 200 ms bin
         xtest = squeeze(x(:,:,test,:));
              
         for CellIter = 1:length(CellNum) % for increasing number of cells with step of 5 
-            PERF = zeros(nboot,nodor);            
-            for boot = 1:nboot %bootstrapping - picking cells randomly with replacement 10 different times
-                CellId = randperm(ncells,CellNum(CellIter)); %new vector of cells on which train/test will be performed
+            PERF = zeros(nboot,nodor);
+            for boot = 1:nboot % bootstrapping - picking cells randomly with replacement 10 different times
+                CellId = randperm(ncells,CellNum(CellIter)); % new vector of cells on which train/test will be performed
                 
                 X = xtrain(CellId,:)';
                 Xtest = xtest(CellId,:)';
@@ -96,7 +96,7 @@ for t = 1:nbins %for each 200 ms bin
                     % From fitting we get a set of feature weights from
                     % which we can predict or classify new data (the test
                     % set):
-                    [a,~]= predict(SVMModel,Xtest(:,:));
+                    [a,~] = predict(SVMModel,Xtest(:,:));
                     temp = reshape(a,[nodor,nrep]); %hack to be able to get mean of 'correct' classification for each odor at next line
                     label(k,:) = mean(temp,2); %mean classification performance across rep for each odor 
                     
@@ -140,7 +140,7 @@ if exclude_oil
     selected_odors = [1:4];
 else 
     selected_odors = [1:5];
-end 
+end
 
 imagesc(squeeze(mean(xx(:,:,selected_odors),[3 4]))',[0 1]) %mean across test and odor 1:4 (ignoring oil)
 axis('square');
@@ -177,4 +177,4 @@ xlabel('Number of neurons')
 ylabel('Classifier performance (%)')
 set(gca,'TickDir','out')
 
-end 
+end
