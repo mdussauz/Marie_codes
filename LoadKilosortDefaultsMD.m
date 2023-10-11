@@ -1,29 +1,16 @@
 function [handles] = LoadKilosortDefaultsMD(handles, Username)
 
-if strcmp(computer, 'PCWIN64') % Marie's remote desktop 
-    KiloSortPath = 'C:\Users\Marie\Documents\Code\KiloSort\';
-    addpath(genpath(KiloSortPath)) % path to kilosort folder
-    addpath(genpath('C:\Users\Marie\Documents\Code\npy-matlab\')) % path to npy-matlab scripts
-    
-        % default settings
-    handles.FilePaths.Data(1) = {'Z:\mdussauz\ephysdata\Conc_id_exp'}; % Root storage
-    handles.FilePaths.Data(2) = {'E3'}; % local read/write folder
-    handles.FilePaths.Data(3) = {'C:\Users\Marie\Documents\data\Sorted\'}; % local read/write folder
-    handles.ServerPath = '/mnt/grid-hs/mdussauz/Smellocator/Processed/Ephys';
-    handles.YourConfigFile = fullfile(KiloSortPath,'StandardConfig_Albeanu.m');
-    
-else % Marie's work linux machine
-    KiloSortPath = '/opt/KiloSort/';
-    addpath(genpath(KiloSortPath)) % path to kilosort folder
-    addpath(genpath('/opt/npy-matlab/')) % path to npy-matlab scripts
-    
-    % default settings
-    handles.FilePaths.Data(1) = {'/mnt/grid-hs/mdussauz/ephysdata'}; % Root storage
-    handles.FilePaths.Data(2) = {'PCX4'}; % local read/write folder
-    handles.FilePaths.Data(3) = {'/mnt/data/Sorted/'}; % local read/write folder
-    handles.ServerPath = '/mnt/grid-hs/mdussauz/Smellocator/Processed/Ephys';
-    handles.YourConfigFile = fullfile(KiloSortPath,'StandardConfig_Albeanu.m');
-end 
+KiloSortPath = '/opt/KiloSort/';
+addpath(genpath(KiloSortPath)) % path to kilosort folder
+addpath(genpath('/opt/npy-matlab/')) % path to npy-matlab scripts
+addpath(genpath('/opt/open-ephys-matlab-tools')) % path to new open ephys data handling scripts
+
+% default settings
+handles.FilePaths.Data(1) = {'/mnt/grid-hs/pgupta/EphysData'}; % Root storage
+handles.FilePaths.Data(2) = {'PCX4'}; % local read/write folder
+handles.FilePaths.Data(3) = {'/mnt/data/Sorted/'}; % local read/write folder
+handles.ServerPath = '/mnt/grid-hs/mdussauz/Smellocator/Processed/Ephys';
+handles.YourConfigFile = fullfile(KiloSortPath,'StandardConfig_Albeanu.m');
 
 % spike detection settings
 handles.init_from_data = 0; % generate template spikes from data
@@ -40,10 +27,74 @@ handles.InactiveChannels.String = ''; % channels that shouldn't be loaded
 % reorder channels - for the new EIB
 handles.ReorderChannels = [];
 
-handles.auxchannels = []; % only used for binary files
+handles.auxchannels = 0; % only used for binary files
+handles.binarypathtag = 'experiment1/recording1/continuous/Rhythm_FPGA-100.0/continuous.dat';
 
 % overwrite settings as per need
 switch Username
+    case {'S1', 'S3', 'S6', 'S7', 'S11', 'S12'} % use GUI_Kilosort_vQ
+
+        handles.YourConfigFile = fullfile(KiloSortPath,'StandardConfig_Albeanu_Q.m');
+        if strcmp(computer, 'GLNXA64')
+            handles.FilePaths.Data(1) = {'/mnt/data(fast)/ephysdata'};
+            handles.FilePaths.Data(3) = {'/mnt/data(fast)/Sorted/'}; % local read/write folder
+        end
+        handles.FilePaths.Data(2) = {Username};
+        handles.recording_settings.Data(1) = 40+8; % 10 TTs + 8 aux
+        handles.recording_settings.Data(2) = 8; % aux channels
+        handles.spike_det_settings.Data(1) = 4; % x, number of clusters - x times more than Nchan
+        handles.spike_det_settings.Data(2) = -4; % spike threshold in standard deviations (4)
+        handles.InactiveChannels.String = mat2str([]);
+        handles.IgnoreChannels.String = mat2str([]);
+        handles.binarypathtag = 'experiment1/recording1/continuous/Acquisition_Board-100.Rhythm Data/continuous.dat';
+
+        if strcmp(Username, 'S1')
+            handles.IgnoreChannels.String = mat2str([1:8, 40]);
+        end
+        if strcmp(Username, 'S3')
+            handles.IgnoreChannels.String = mat2str(32);
+        end
+        % S6: no channels ignored
+        if strcmp(Username, 'S7')
+            handles.IgnoreChannels.String = mat2str([30, 33:40]);
+        end
+        %S11: no channels ignored
+        if strcmp(Username, 'S12')
+            handles.IgnoreChannels.String = mat2str([]);
+        end
+    case {'Q3', 'Q4', 'Q5', 'Q8', 'Q9'} % use GUI_Kilosort_vQ
+        handles.YourConfigFile = fullfile(KiloSortPath,'StandardConfig_Albeanu_Q.m');
+        handles.FilePaths.Data(1) = {'/mnt/albeanu_lab/priyanka/EphysData'};
+        handles.FilePaths.Data(2) = {Username};
+        handles.recording_settings.Data(1) = 40+8; % 10 TTs + 8 aux
+        handles.recording_settings.Data(2) = 8; % aux channels
+        handles.spike_det_settings.Data(1) = 4; % x, number of clusters - x times more than Nchan
+
+        handles.InactiveChannels.String = mat2str([]);
+        handles.IgnoreChannels.String = mat2str([]);
+        handles.binarypathtag = 'experiment1/recording1/continuous/Acquisition_Board-100.Rhythm Data/continuous.dat';
+        if strcmp(Username, 'Q9')
+            handles.IgnoreChannels.String = mat2str([11 22]);
+            handles.spike_det_settings.Data(2) = -4;
+        end
+        if strcmp(Username, 'Q4')
+            handles.IgnoreChannels.String = mat2str([16]);
+            handles.spike_det_settings.Data(2) = -4;
+        end
+        if strcmp(Username, 'Q8')
+            %handles.YourConfigFile = fullfile(KiloSortPath,'StandardConfig_Albeanu_Q_v2.m');
+            handles.IgnoreChannels.String = mat2str([1:3 21:23]);
+            handles.spike_det_settings.Data(2) = -4;
+        end
+        if strcmp(Username, 'Q5')
+            %handles.IgnoreChannels.String = mat2str([18]); % session 22-11-30
+            handles.IgnoreChannels.String = mat2str([30]);
+        end
+        if strcmp(Username, 'Q3')
+            handles.IgnoreChannels.String = mat2str([1:8]);
+            handles.spike_det_settings.Data(2) = -4;
+            handles.spike_det_settings.Data(1) = 3;
+        end
     case {'K4'}
         handles.FilePaths.Data(1) = {'/mnt/data/Priyanka'}; % Root storage
         handles.FilePaths.Data(2) = {'K4'}; % Animal Name
