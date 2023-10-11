@@ -2,7 +2,7 @@ function [resptest_response_class,channels_perc] = ClassifyOdorResponsiveCellsRe
 % writing this for closed-loop trials only
 %ouptuts are :
 % - resptest_response_class = for each unit whether 0 unresponsive, 1
-% excited, 2 inhibted, 3 mixed
+% excited, 2 inhibited, 3 mixed
 % - percentage of total cells in each class 
 % written by MD
 
