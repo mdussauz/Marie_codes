@@ -29,6 +29,7 @@ PreprocessSmellocatorData('/mnt/grid-hs/pgupta/Behavior/S12/S12_20230727_r0.mat'
 
 %free lever open loop 
 PreprocessSmellocatorData('/mnt/grid-hs/pgupta/Behavior/S1/S1_20230403_r0.mat',1);
+PreprocessSmellocatorData('/mnt/grid-hs/pgupta/Behavior/S6/S6_20230718_r0.mat',1);
 PreprocessSmellocatorData('/mnt/grid-hs/pgupta/Behavior/S7/S7_20230622_r0.mat',1);
 
 %halt flip 
