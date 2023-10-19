@@ -8,8 +8,12 @@
 % 5) 1st TZ entry > 100 ms
 
 %% File path
-SessionName = 'Q8/Q8_20221207_r0_processed.mat';
-ProcessedBehaviorPath = '/Users/mariedussauze/Desktop/Analysis/data/Smellocator/Processed/Behavior';
+SessionName = 'O3/O3_20211005_r0_processed.mat';
+if strcmp(computer,  'PCWIN64')
+    ProcessedBehaviorPath = 'C:\Users\Marie\Documents\data\Smellocator\Processed\Behavior';
+else
+    ProcessedBehaviorPath = '/Users/mariedussauze/Desktop/Analysis/data/Smellocator/Processed/Behavior';
+end
 MySession = fullfile(ProcessedBehaviorPath,SessionName);
 
 %Settings to be changed depending on analysis performed
@@ -62,13 +66,13 @@ N = size(SingleUnits,2);
 %% Get SpikeTimes aligned to each events 
 
 SortTrials =1;
-window_length = 1000; 
+window_length = 200; 
 
 AllMeanCenterAlignedFRs = zeros(3, 6, N, window_length); % odor x event x unit x window length 
 AllMeanTrialAlignedFRs = zeros(3, 6, N, window_length); % odor x event xunit x window length 
 
 for whichodor = 1:3
-    for AlignTo = 1:6
+    for AlignTo = 1:5 %%% !!! Need to change back to 6 and correct that perturbation inclusion problem !!!
         for whichunit = 1:N
 
             %  baseline and perturbation trials in closed loop - %dim are TZ x time 
@@ -115,16 +119,16 @@ num_Channel                 = N;
 %reference                   = [800 900; 900 1000; 1000 1100; 1100 1200; 1200 1300; 1300 1400; 1400 1500];  % It is important to use the same window size for each window you want to evaluate.
 % trying even smaller window - final settings - 600ms (300 bins) around target zone entry on each side: 
 %reference                   = [900 1000; 1000 1100; 1100 1200; 1200 1300; 1300 1400; 1400 1500];  % It is important to use the same window size for each window you want to evaluate.
-reference                   = [1200 1300];
+reference                   = [1 100];
 % bin 600 is when the trial is ON 
 %reference_baseline          = [100 200; 200 300; 300 400; 400 500];        % You have to divide your baseline in frame windows equivalent to the ones you want to evaluate.
-reference_baseline          = [1100 1200];
+reference_baseline          = [1 100];
 reference_threshold         = [1 99; 5 95; 10 90];                         % Here you can feed possible thresholds you want to try. To get an idea of which threshold to pick, use 'Responsive_bouton_threshold_test_20221021.m'                                   
 threshold                   = 1;                                           % Pick the desired threshold by defining the used row of reference threshold.
 
 %% Frame window averages of baseline periods. 
 % Here I divided the baseline in 4 periods with a window frame size equivalent to the ones I use for the response period 
-AllMeanCenterAlignedFRs = reshape(AllMeanCenterAlignedFRs, [N,3,6,window_length]); %unit x (odor x tz) x time
+AllMeanCenterAlignedFRs = reshape(AllMeanCenterAlignedFRs, [N,3,6,window_length]); %unit x odor x alignto x time
  
 baseline_A(:,:) = squeeze(mean(AllMeanCenterAlignedFRs(:,:,:,reference_baseline(1,1):reference_baseline(1,2)),4,'omitnan')); % 1st window
 % baseline_B(:,:) = squeeze(mean(AllTrialAlignedFRs(:,:,reference_baseline(2,1):reference_baseline(2,2)),3,'omitnan')); % 2nd window
@@ -151,7 +155,7 @@ baseline_Roi_median             = median(baseline_all,2,'omitnan');
 % modifing the 'reference' array and include or remove more dataset windows
 % depending on your data.
 
-window_size = reference(1,2)-reference(1,1);% I shouldn't need the +1 - % here for me would be 100 bins = 200ms 
+%window_size = reference(1,2)-reference(1,1);% I shouldn't need the +1 - % here for me would be 100 bins = 200ms 
 
 % % Next I reduce the frame and trial dimensions to one by getting an average value
 
@@ -162,22 +166,23 @@ window_size = reference(1,2)-reference(1,1);% I shouldn't need the +1 - % here f
 
 nCategory = size(reference,1); %how many time windows to test 
 
-resptest_values = NaN(3,num_Channel,nCategory); % odor x unit x category
+resptest_values = NaN(3,6, num_Channel,nCategory); % odor x alignto x unit x category
 for nPeriods = 1:size(reference,1)
     %calculate mean response for defined time window: 
-    resptest_values(:,:,nPeriods) = squeeze(mean(AllMeanCenterAlignedFRs (:,:,reference(nPeriods,1):reference(nPeriods,2)),3)); 
+    resptest_values(:,:,:,nPeriods) = squeeze(mean(AllMeanCenterAlignedFRs (:,:,reference(nPeriods,1):reference(nPeriods,2)),3)); 
 end 
 %% Identification of responsive boutons, both enhanced and suppressed for all odors - SINGLE THRESHOLD VALUES
 
 
 num_Category = nCategory; % the number of tested windows  
-resptest_index_single       = NaN(3, num_Channel,num_Category); % odor x unit x time window
+resptest_index_single       = NaN(3, 6, num_Channel,num_Category); % odor x align to x unit x time window
 
 % Identification of boutons showing enhanced or suppressed responses for each period
 for odor = 1:3
+    for alignto = 1:6
     for nCategory = 1:num_Category
         for nChannel = 1:num_Channel
-            if resptest_values(odor,nChannel,nCategory) > baseline_Roi_prctl_high_single(nChannel,1)
+            if resptest_values(odor, alignto, nChannel,nCategory) > baseline_Roi_prctl_high_single(nChannel,1)
                 resptest_index_single(odor,nChannel,nCategory) = 1;
                 
             elseif  resptest_values(odor, nChannel,nCategory) < baseline_Roi_prctl_low_single(nChannel,1)
@@ -187,6 +192,7 @@ for odor = 1:3
                 resptest_index_single(odor, nChannel,nCategory) = 0;
             end
         end
+    end
     end
 end
 
