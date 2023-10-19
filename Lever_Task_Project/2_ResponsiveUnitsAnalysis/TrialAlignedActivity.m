@@ -114,15 +114,18 @@ switch AlignTo
         % offset all events with ON timestamp
         myEvents = myEvents - Offset;
         Xlims = [-1.2 -1] - 1;
+        
     case 6 % perturbation start
-        if ~sniffaligned
-            Offset = myEvents(:,5);
-        else
-            Offset = floor(myEvents(:,5));
+        if ~isempty(perturbationTrials)
+            if ~sniffaligned
+                Offset = myEvents(:,5);
+            else
+                Offset = floor(myEvents(:,5));
+            end
+            % offset all events with ON timestamp
+            myEvents = myEvents - Offset;
+            Xlims = [-1.2 -1];
         end
-        % offset all events with ON timestamp
-        myEvents = myEvents - Offset;
-        Xlims = [-1.2 -1];
 end
 if sniffaligned
     Xlims = sniffscalar*Xlims;
@@ -131,15 +134,29 @@ end
 %%
 x = size(whichTrials,1);
 % calculate PSTH
-AlignedFRs = []; RawSpikeCounts = [];
-BinOffset = round(Xlims(1)*1000);
+AlignedFRs = zeros(12,200); RawSpikeCounts = zeros(12,200);
+%BinOffset = round(Xlims(1)*1000);
+window = 100;
+BinOffset = -window; % !!! add to function input !!! Here just the window I care about
+WindowStart = BinOffset;
+WindowEnd = abs(BinOffset) + 100;
+AlignedFRs = zeros(12,WindowEnd); RawSpikeCounts = zeros(12,WindowEnd);
 
 for TZ = 1:12
     thisTZspikes = thisUnitSpikes(whichTrials(find(whichTrials(:,2)==TZ),1));
     Events2Align = Offset(find(whichTrials(:,2)==TZ),1);
     [myFR, myPSTH] = MakePSTH_v3(thisTZspikes,Events2Align,BinOffset,'downsample',500);
-    AlignedFRs(TZ,1:numel(myFR)) = myFR;
-    RawSpikeCounts(TZ,1:numel(myPSTH)) = myPSTH;
+    if isempty(myFR)
+        myFR = zeros(200);
+        myPSTH = zeros(200);
+    end 
+    if length(myFR) <200
+        myFR(length(myFR):200) = 0;
+        myPSTH(length(myFR):200) = 0;
+    end
+    AlignedFRs(TZ,1:WindowEnd) = myFR(1:WindowEnd);
+    RawSpikeCounts(TZ,1:WindowEnd) = myPSTH(1:WindowEnd);
+
 end
 
 entries_done = TZ;
@@ -151,8 +168,16 @@ for TZ = 1:12
     thisTZspikes = thisUnitSpikes(perturbationTrials(find(perturbationTrials(:,2)==TZ),1));
     Events2Align = Offset(x+find(perturbationTrials(:,2)==TZ),1);
     [myFR, myPSTH] = MakePSTH_v3(thisTZspikes,Events2Align,BinOffset,'downsample',500);
-    AlignedPerturbationFRs(TZ,1:numel(myFR)) = myFR;
-    RawPerturbationSpikeCounts(TZ,1:numel(myPSTH)) = myPSTH;
+    if isempty(myFR)
+        myFR = zeros(200);
+        myPSTH = zeros(200);
+    end
+    if length(myFR) <200
+        myFR(length(myFR):200) = 0;
+        myPSTH(length(myFR):200) = 0;
+    end
+    AlignedPerturbationFRs(TZ,1:WindowEnd) = myFR(1:WindowEnd);
+    RawPerturbationSpikeCounts(TZ,1:WindowEnd) = myPSTH(1:WindowEnd);
 end
 
 trialsdone = size(allTrials,1);
