@@ -25,13 +25,14 @@ PreprocessSmellocatorData('/mnt/grid-hs/pgupta/Behavior/S1/S1_20230314_r0.mat',1
 PreprocessSmellocatorData('/mnt/grid-hs/pgupta/Behavior/S3/S3_20230321_r0.mat',1);
 PreprocessSmellocatorData('mnt/grid-hs/pgupta/Behavior/S6/S6_20230727_r0.mat',1);
 PreprocessSmellocatorData('mnt/grid-hs/pgupta/Behavior/S7/S7_20230707_r0.mat',1);
-PreprocessSmellocatorData('/mnt/grid-hs/pgupta/Behavior/S11/S11_20230805_r0.mat',1);
+PreprocessSmellocatorData('S11_20230812_r0.mat',1);
 PreprocessSmellocatorData('/mnt/grid-hs/pgupta/Behavior/S12/S12_20230727_r0.mat',1);
 
 %free lever open loop 
 PreprocessSmellocatorData('/mnt/grid-hs/pgupta/Behavior/S1/S1_20230403_r0.mat',1);
 PreprocessSmellocatorData('/mnt/grid-hs/pgupta/Behavior/S6/S6_20230718_r0.mat',1);
 PreprocessSmellocatorData('/mnt/grid-hs/pgupta/Behavior/S7/S7_20230622_r0.mat',1);
+PreprocessSmellocatorData('/mnt/grid-hs/pgupta/Behavior/S11/S11_20230805_r0.mat',1);
 
 %halt flip 
 PreprocessSmellocatorData('/mnt/grid-hs/pgupta/Behavior/S1/S1_20230327_r0.mat',1);
