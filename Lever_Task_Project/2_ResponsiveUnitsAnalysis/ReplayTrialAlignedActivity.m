@@ -1,18 +1,23 @@
 function [ActiveAlignedFRs, ActiveRawSpikeCounts, PassiveAlignedFRs, ...
     PassiveRawSpikeCounts] = ReplayTrialAlignedActivity(trialsdone, ...
-    whichUnit, whichodor, AlignedSpikes, Events, TrialInfo, AlignTo, SortTrials, varargin)
+    whichUnit, whichodor, AlignedSpikes, Events, TrialInfo, AlignTo, windowsize, SortTrials, varargin)
 
 narginchk(1,inf)
 params = inputParser;
 params.CaseSensitive = false;
 
-params.addParameter('sniffaligned', false, @(x) islogical(x) || x==0 || x==1);
 params.addParameter('sniffscalar', 3, @(x) isnumeric(x));
 
 % extract values from the inputParser
 params.parse(varargin{:});
-sniffaligned = params.Results.sniffaligned;
+
 sniffscalar = params.Results.sniffscalar;
+
+if sniffscalar~=0
+    sniffaligned = 1;
+else
+    sniffaligned = 0;
+end 
 
 thisUnitSpikes = AlignedSpikes(:,whichUnit);
 
@@ -41,7 +46,6 @@ end
 myEvents = Events(allTrials(:,1),:);
 switch AlignTo
     case 1 % to trial ON
-        Xlims = [-1.2 -1];
         Offset = 0*myEvents(:,1);
     case 2 % odor ON
         if ~sniffaligned
@@ -50,9 +54,6 @@ switch AlignTo
             odorON = floor(myEvents(:,1));
         end
         myEvents(:,1) = 0; % replace odorON with TrialON
-        % offset all events with ON timestamp
-        myEvents = myEvents - odorON;
-        Xlims = [-1.2 -1];
         Offset = odorON;
     case 3 % trial OFF
         if ~sniffaligned
@@ -61,9 +62,6 @@ switch AlignTo
             TrialOFF = floor(myEvents(:,3));
         end
         myEvents(:,3) = 0; % replace TrialOFF with TrialON
-        % offset all events with ON timestamp
-        myEvents = myEvents - TrialOFF;
-        Xlims = [-1.2 -1] - 4;
         Offset = TrialOFF;
     case 4 % reward
         if ~sniffaligned
@@ -72,9 +70,6 @@ switch AlignTo
             Reward = myEvents(:,3);
         end
         myEvents(:,2) = 0; % replace Reward with TrialON
-        % offset all events with ON timestamp
-        myEvents = myEvents - Reward;
-        Xlims = [-1.2 -1] - 4;
         Offset = Reward;
     case 5 % first TZ entry with stay > 100ms
         if ~sniffaligned
@@ -83,8 +78,6 @@ switch AlignTo
             Offset = floor(myEvents(:,4));
         end
         % offset all events with ON timestamp
-        myEvents = myEvents - Offset;
-        Xlims = [-1.2 -1] - 1;
     case 6 % perturbation start
         if ~sniffaligned
             Offset = myEvents(:,5);

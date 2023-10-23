@@ -6,13 +6,18 @@ function [PerturbationReplayAlignedFRs,PerturbationReplayRawSpikeCounts,...
 narginchk(1,inf)
 params = inputParser;
 params.CaseSensitive = false;
-params.addParameter('sniffaligned', false, @(x) islogical(x) || x==0 || x==1);
+
 params.addParameter('sniffscalar', 3, @(x) isnumeric(x));
 
 % extract values from the inputParser
 params.parse(varargin{:});
-sniffaligned = params.Results.sniffaligned;
 sniffscalar = params.Results.sniffscalar;
+
+if sniffscalar~=0
+    sniffaligned = 1;
+else
+    sniffaligned = 0;
+end 
 
 %%
 thisUnitSpikes = AlignedSpikes(:,whichUnit);
