@@ -9,21 +9,36 @@
 
 %% %Settings to be changed depending on analysis performed
 
-% Parameters to extract responses:
+% General parameters
+BaselineChoice = 'PreEvent'; %PreEvent vs ITI
 SortTrials =1; % !!! this is for perturbation and replay trials but once I incorporate those trials it should be deleted from analysis !!!
-
+TZsorted = 1; % to get PSTH average across each TZ type 
 % !!! As of now sniff option is not available for OL and Offset II !!!
 sniff_warp = 0; % sniff warp method -% 0 - don't align, 1 - simple warp, 2 - complex warp, 3 - fixed latency
-window = [-500 500]; % time window to extract around event
+
+% Parameters to extract responses:
+window = [-300 300]; % time window to extract around event
 windowsize = length(window(1):window(2)); 
+halfwindow = floor(windowsize/2);
 
 % Parameters to analyze responsiveness:
-baseline = [1 100];
-reference = [1 100];
-threshold = [1 99]; %[5 95]; [10 90]; = Thresholds to try                                   
+baseline_window = [1 halfwindow];
+test_window = [halfwindow+1 windowsize];
+threshold = [10 90]; %[1 99] [3 97] [5 95]; [10 90]; = Thresholds to try                                   
 
 %% File path
-SessionName = 'O3/O3_20211005_r0_processed.mat';
+%SessionName = 'O3/O3_20211005_r0_processed.mat';
+%SessionName = 'O8/O8_20220702_r0_processed.mat';
+%SessionName = 'O9/O9_20220630_r0_processed.mat';
+%SessionName = 'S1/S1_20230314_r0_processed.mat';
+%SessionName = 'S3/S3_20230321_r0_processed.mat';
+%SessionName = 'S6/S6_20230727_r0_processed.mat';
+%SessionName ='S7/S7_20230707_r0_processed.mat';
+%SessionName ='S11/S11_20230812_r0_processed.mat';
+SessionName ='S12/S12_20230727_r0_processed.mat';
+
+
+
 if strcmp(computer,  'PCWIN64')
     ProcessedBehaviorPath = 'C:\Users\Marie\Documents\data\Smellocator\Processed\Behavior';
 else
@@ -76,22 +91,22 @@ end
 NbUnit = size(handles.SingleUnits,2);
 
 %% Get SpikeTimes and FR aligned to each events 
-
 %initialize
-MeanAlignedFRs = zeros(NbUnit, 3, 6, windowsize); % unit x odor x event x window length 
-AllMeanTrialAlignedFRs = zeros(NbUnit, 3, 6, windowsize); % unit x odor x event x window length 
+MeanAlignedFRs = zeros(NbUnit, 3, max(EventsToAlign), windowsize); % unit x odor x event x window length 
+AllMeanTrialAlignedFRs = zeros(NbUnit, 3, max(EventsToAlign), windowsize); % unit x odor x event x window length 
 
-for whichodor = 1:3
-    for AlignTo = EventsToAlign
+for odor = 1:3
+    for event = EventsToAlign
         
-        for whichunit = 1:NbUnit
-            %  baseline and perturbation trials in closed loop - %dim are TZ x time 
+        for unit = 1:NbUnit
+            %  baseline and perturbation trials in closed loop - %dim are trials(or TZ) x time 
             [trialsdone, AlignedFRs, AlignedPerturbationFRs, RawSpikeCounts, RawPerturbationSpikeCounts] = ...
-                EventAlignedActivity(whichunit, whichodor, handles.AlignedSpikes, handles.Events, handles.TrialInfo, AlignTo, window, 'sniffscalar', sniff_warp);
+                EventAlignedActivity(unit, odor, handles.AlignedSpikes, handles.Events, handles.TrialInfo, event, window, 'sniffscalar', sniff_warp, 'TZsorted', TZsorted);
 
-            %take the mean across TZ:
-            ThisMeanAlignedFR = squeeze(mean(AlignedFRs, 1));
-            MeanAlignedFRs (whichunit,whichodor,AlignTo,:) = ThisMeanAlignedFR(1:windowsize); %store in matrix with dimension units x odor x events x times
+            
+            AllAlignedFRs.(['odor',num2str(odor)])(:,unit,event,:)= AlignedFRs; %dim: trials x unit x event x time
+            ThisMeanAlignedFR = squeeze(mean(AlignedFRs, 1)); %take the mean across trials (or TZ)
+            MeanAlignedFRs (unit,odor,event,:) = ThisMeanAlignedFR(1:windowsize); %dim: units x odor x event x times
             clearvars ThisMeanAlignedFR
 
             %  open loop trials
@@ -113,108 +128,74 @@ for whichodor = 1:3
     end
 end
 
-%% Frame window averages of baseline periods. 
-% Here I divided the baseline in 4 periods with a window frame size equivalent to the ones I use for the response period 
-% MeanAlignedFRs unit x odor x alignto x time
- 
-baseline_A(:,:) = squeeze(mean(MeanAlignedFRs(:,:,:,baseline(1,1):baseline(1,2)),4,'omitnan')); % 1st window
-% baseline_B(:,:) = squeeze(mean(AllTrialAlignedFRs(:,:,reference_baseline(2,1):reference_baseline(2,2)),3,'omitnan')); % 2nd window
-% baseline_C(:,:) = squeeze(mean(AllTrialAlignedFRs(:,:,reference_baseline(3,1):reference_baseline(3,2)),3,'omitnan')); % 3rd window
-% baseline_D(:,:) = squeeze(mean(AllTrialAlignedFRs(:,:,reference_baseline(4,1):reference_baseline(4,2)),3,'omitnan')); % 4th window
+%% Window averages of baseline periods and percentile of baseline response probabilities for each unit across trials
+% responsive neurons = response probability exceeding the kth (95,97,99) 
+% percentile of baseline response probabilities for that neuron;
 
-%baseline_all = [baseline_A baseline_B baseline_C baseline_D];              % These values are concatenated in one single matrix  
-baseline_all = baseline_A(:,:);
+switch BaselineChoice
+    case 'PreEvent' % if we want to compare response to event to activity before event
+% AllAlignedFRs.odor(x) = trial x unit x event x time
+% baseline_activity = trial x unit x event
+% baseline_percentile = unit x odor x event
+for odor = 1:3
+    %get average baseline activity across trials
+    baseline_activity = squeeze(mean(...
+        AllAlignedFRs.(['odor',num2str(odor)])(:,:,:,baseline_window(1,1):baseline_window(1,2)),4,'omitnan')); 
+    
+    % getting percentile of average baseline resp across trials
+    baseline_prctl_low(:,odor,:)   = prctile(baseline_activity,threshold(1,1),1);    % Set the low threshold  
+    baseline_prctl_high(:,odor,:)  = prctile(baseline_activity,threshold(1,2),1);    % Set the high threshold 
 
-%% Baseline reference values for each unit.
-               
-baseline_prctl_low_single   = prctile(baseline_all,threshold(1,1),2);    % Set the low threshold  
-baseline_prctl_high_single  = prctile(baseline_all,threshold(1,2),2);    % Set the high threshold 
+    %clearvars baseline_activity
+end
+    case 'ITI' %if we want to compare response to event to activty during ITI (or just before trial on)
+%baseline_activity = 
+end
 
+baseline_prctl_low = round(baseline_prctl_low);
+baseline_prctl_high = round(baseline_prctl_high);
 %% Period data extraction for responsiveness test
+% average responses to one odor and one event for that specific window 
+% AllMeanCenterAlignedFRs (whichunit,whichodor,AlignTo,:)
 
-% % Next I reduce the frame and trial dimensions to one by getting an average value
+mean_window_activity = NaN(NbUnit,3,max(EventsToAlign)); % unit x odor x event 
+%calculate mean response for defined time window: 
+mean_window_activity(:,:,:) = squeeze(mean(MeanAlignedFRs (:,:,:,test_window(1):test_window(2)),4)); 
+mean_window_activity = round(mean_window_activity);
 
-% what we want is a matrix of dimensions unit x
-% tested windows which contains average responses to one odor for that
-% specific window 
-% AllMeanCenterAlignedFRs (whichodor,whichunit,:)
-
-nCategory = size(reference,1); %how many time windows to test 
-
-resptest_values = NaN(3,6, NbUnit,nCategory); % odor x alignto x unit x category
-for nPeriods = 1:size(reference,1)
-    %calculate mean response for defined time window: 
-    resptest_values(:,:,:,nPeriods) = squeeze(mean(MeanAlignedFRs (:,:,reference(nPeriods,1):reference(nPeriods,2)),3)); 
-end 
 %% Identification of responsive boutons, both enhanced and suppressed for all odors - SINGLE THRESHOLD VALUES 
-resptest_index_single       = NaN(3, 6, NbUnit,nCategory); % odor x align to x unit x time window
+resp_score = NaN(NbUnit,3, max(EventsToAlign)); % unit x odor x event
 
 % Identification of boutons showing enhanced or suppressed responses for each period
 for odor = 1:3
-    for alignto = 1:6
-    for nCategory = 1:nCategory
+    for event = EventsToAlign
         for unit = 1:NbUnit
-            if resptest_values(odor, alignto, unit,nCategory) > baseline_prctl_high_single(unit,1)
-                resptest_index_single(odor,unit,nCategory) = 1;
+            if mean_window_activity(unit,odor,event) > baseline_prctl_high(unit,odor,event)
+                resp_score(unit,odor,event) = 1;
                 
-            elseif  resptest_values(odor, unit,nCategory) < baseline_prctl_low_single(unit,1)
-                resptest_index_single(odor,unit,nCategory) = 2;
+            elseif  mean_window_activity(unit,odor, event) < baseline_prctl_low(unit,odor,event)
+                resp_score(unit,odor,event) = 2;
                 
             else
-                resptest_index_single(odor, unit,nCategory) = 0;
+                resp_score(unit,odor,event) = 0;
             end
         end
     end
-    end
 end
 
-
-% Classification of boutons by their responsiveness. 
-% New array with num Channels x 2 columns. 
-% The first column is assignated with a 1 if
-% I found at least one enhanced response in one of the periods of each 
-% channel row. The second with a 2 if I found at least one suppressed 
-% response in each channel row. If no enhanced or suppressed response is 
-% found I assign a 0 value in column 1 or 2 respectively. 
-
-resptest_response_single    = NaN(3,NbUnit,2); %odor x unit x enh/inh
-
-for odor = 1:3
-    for unit = 1:NbUnit
-        
-        if find(resptest_index_single(odor,unit,:) == 1,1,'first')
-            resptest_response_single(odor,unit,1) = 1;
-        else
-            resptest_response_single(odor,unit,1) = 0;
-        end
-        
-        if find(resptest_index_single(odor,unit,:) == 2,1,'first')
-            resptest_response_single(odor,unit,2) = 2;
-        else
-            resptest_response_single(odor,unit,2) = 0;
-        end
-    end
-end
-
-%% Making response matrix for responsiveness to any odor
-resptest_response_all    = NaN(NbUnit,2); %unit x enh/inh
+%% Making response matrix for responsiveness to any event
+responsive_units   = NaN(NbUnit,1);
 
 for unit = 1:NbUnit
     
-    if find(resptest_response_single(:,unit,1) == 1,1,'first')
-        resptest_response_all(unit,1) = 1;
+    if any(squeeze(resp_score(unit,:,:))~=0, 'all')
+        responsive_units(unit,1) = 1;
     else
-        resptest_response_all(unit,1) = 0;
+        responsive_units(unit,1) = 0;
     end
     
-    if find(resptest_response_single(:,unit,2) == 2,1,'first')
-        resptest_response_all(unit,2) = 2;
-    else
-        resptest_response_all(unit,2) = 0;
-    end
 end
-
-%% Response class
+%% Response class - not used
 
 % new variable named 'resptest_response_class' that is fed with the sum 
 % value of each channel row of 'resptest_response_single'. In that way: 
@@ -223,4 +204,3 @@ end
 % a complex/dual response channel a 1 + 2 = 3; 
 % an unresponsive channel a 0 + 0 = 0.
 
-resptest_response_class(:,1) = resptest_response_all(:,1) + resptest_response_all(:,2);

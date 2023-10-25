@@ -6,11 +6,13 @@ params = inputParser;
 params.CaseSensitive = false;
 
 params.addParameter('sniffscalar', 3, @(x) isnumeric(x));
+params.addParameter('TZsorted', 0, @(x) isnumeric(x)); 
 
 
 % extract values from the inputParser
 params.parse(varargin{:});
 sniffscalar = params.Results.sniffscalar;
+TZsorted = params.Results.TZsorted;
 
 if sniffscalar~=0
     sniffaligned = 1;
@@ -118,7 +120,11 @@ if sniffaligned
     window = sniffscalar*window;
 end
 
-%% calculate PSTH for normal trials
+
+if TZsorted 
+
+
+%% calculate PSTH for each TZ for normal trials 
 % initialize
 BinOffset = window(1); 
 windowsize = length(window(1):window(2)); 
@@ -127,16 +133,18 @@ myPSTH = zeros(1,windowsize);  myFR = zeros(1,windowsize);
 
 for TZ = 1:12
     thisTZspikes = thisUnitSpikes(whichTrials(find(whichTrials(:,2)==TZ),1));
-    Events2Align = Offset(find(whichTrials(:,2)==TZ),1);
-    [myFR, myPSTH] = MakePSTH_MD(thisTZspikes,Events2Align,BinOffset,window,'kernelsize',25);
+    if ~isempty(thisTZspikes) % sometimes no spikes in trial
+        Events2Align = Offset(find(whichTrials(:,2)==TZ),1);
+        [myFR, myPSTH] = MakePSTH_MD(thisTZspikes,Events2Align,BinOffset,window,'kernelsize',25);
 
-    AlignedFRs(TZ,:) = myFR;
-    RawSpikeCounts(TZ,:) = myPSTH;
+        AlignedFRs(TZ,:) = myFR;
+        RawSpikeCounts(TZ,:) = myPSTH;
+    end
 
 end
 
 
-%% calculate PSTH for perturbed trials
+%% calculate PSTH for each TZ for perturbed trials
 x = size(whichTrials,1); %nb of normal trials
 AlignedPerturbationFRs = zeros(12,windowsize); RawPerturbationSpikeCounts = zeros(12,windowsize);
 myPSTHp = zeros(1,windowsize);  myFRp = zeros(1,windowsize);
@@ -145,15 +153,65 @@ if ~isempty(perturbationTrials) %if there are perturbation trials
 
     for TZ = 1:12
         thisTZspikes = thisUnitSpikes(perturbationTrials(find(perturbationTrials(:,2)==TZ),1));
-        Events2Align = Offset(x+find(perturbationTrials(:,2)==TZ),1);
-        [myFRp, myPSTHp] = MakePSTH_MD(thisTZspikes,Events2Align,BinOffset,window,'kernelsize',25);
+        if ~isempty(thisTZspikes) % sometimes no spikes in trial
+            Events2Align = Offset(x+find(perturbationTrials(:,2)==TZ),1);
+            [myFRp, myPSTHp] = MakePSTH_MD(thisTZspikes,Events2Align,BinOffset,window,'kernelsize',25);
 
-        AlignedPerturbationFRs(TZ,:) = myFRp;
-        RawPerturbationSpikeCounts(TZ,:) = myPSTHp;
+            AlignedPerturbationFRs(TZ,:) = myFRp;
+            RawPerturbationSpikeCounts(TZ,:) = myPSTHp;
+        end
+    end
+
+
+end
+
+else 
+
+    %% calculate PSTH for each trial normal trials 
+% initialize
+BinOffset = window(1); 
+windowsize = length(window(1):window(2)); 
+x = size(whichTrials,1); %nb of normal trials
+AlignedFRs = zeros(x,windowsize); RawSpikeCounts = zeros(x,windowsize);
+myPSTH = zeros(1,windowsize);  myFR = zeros(1,windowsize);
+
+for thisTrial = 1:x
+    thisTrialSpikes = thisUnitSpikes{whichTrials(thisTrial,1)}{1}; 
+    if ~isempty(thisTrialSpikes) % sometimes no spikes in trial
+    Events2Align = Offset(thisTrial);
+    [myFR, myPSTH] = MakePSTH_MD(thisTrialSpikes,Events2Align,BinOffset,window,'kernelsize',25);
+
+    AlignedFRs(thisTrial,:) = myFR;
+    RawSpikeCounts(thisTrial,:) = myPSTH;
+    end
+
+end
+
+
+%% calculate PSTH for each perturbed trials
+x = size(whichTrials,1); %nb of normal trials
+y = size(perturbationTrials,1); %nb of perturbed trials
+AlignedPerturbationFRs = zeros(y,windowsize); RawPerturbationSpikeCounts = zeros(y,windowsize);
+myPSTHp = zeros(1,windowsize);  myFRp = zeros(1,windowsize);
+
+if ~isempty(perturbationTrials) %if there are perturbation trials
+
+    for thisPertubTrial = 1:y
+        thisTrialSpikes = thisUnitSpikes{perturbationTrials(thisPertubTrial,1)}{1}; 
+        if ~isempty(thisTrialSpikes) % sometimes no spikes in trial
+        Events2Align = Offset(x+thisPerturbTrial);
+        [myFRp, myPSTHp] = MakePSTH_MD(thisTrialspikes,Events2Align,BinOffset,window,'kernelsize',25);
+
+        AlignedPerturbationFRs(thisPertubTrial,:) = myFRp;
+        RawPerturbationSpikeCounts(thisPertubTrial,:) = myPSTHp;
+        end
     end
 
     
 end
+
+end 
+
 trialsdone = size(allTrials,1);
 end 
 
