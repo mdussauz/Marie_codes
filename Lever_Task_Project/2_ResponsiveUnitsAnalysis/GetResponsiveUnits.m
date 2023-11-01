@@ -1,5 +1,6 @@
-% Event_responsive_cells_script 
-% Script to find cells that are responsive to different events of lever
+function [responsive_units, resp_score] = GetResponsiveUnits(SessionName)
+
+% Function to find cells that are responsive to different events of lever
 % task behavior with and without aligning to 1st sniff after trial start: 
 % 1) trial on = 0
 % 2) odor on = myEvents(:,1)
@@ -35,7 +36,7 @@ end
 %SessionName = 'S1/S1_20230314_r0_processed.mat';
 %SessionName = 'S3/S3_20230321_r0_processed.mat';
 %SessionName = 'S6/S6_20230727_r0_processed.mat'; 
-SessionName = 'S7/S7_20230707_r0_processed.mat'; %% bug
+%SessionName = 'S7/S7_20230707_r0_processed.mat'; %% bug
 %SessionName = 'S11/S11_20230812_r0_processed.mat'; 
 %SessionName = 'S12/S12_20230727_r0_processed.mat';
 
@@ -262,12 +263,3 @@ for unit = 1:NbUnit
     end
     
 end
-%% Response class - not used
-
-% new variable named 'resptest_response_class' that is fed with the sum 
-% value of each channel row of 'resptest_response_single'. In that way: 
-% a enhanced channel corresponds to 1 + 0 = 1; 
-% a suppressed channel 0 + 2 = 2; 
-% a complex/dual response channel a 1 + 2 = 3; 
-% an unresponsive channel a 0 + 0 = 0.
-

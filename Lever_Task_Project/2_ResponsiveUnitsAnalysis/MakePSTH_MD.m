@@ -50,7 +50,11 @@ if Nbtrials > 1 % if multiple trials
 elseif Nbtrials ==1 % if only 1 trial
 
     % align spiketimes to the specified event
-    thisTrialSpikes = Spiketimes - Offset;
+    if iscell(Spiketimes) % needed for TZspikes if only 1 trial
+        thisTrialSpikes = Spiketimes{1}{1} - Offset;
+    else 
+        thisTrialSpikes = Spiketimes - Offset;
+    end 
     % convert spike times to milliseconds and floor values
     thisTrialSpikes = ceil(1000*thisTrialSpikes);
     % remove NaNs
