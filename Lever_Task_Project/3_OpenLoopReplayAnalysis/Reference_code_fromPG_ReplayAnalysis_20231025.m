@@ -1,8 +1,9 @@
+% Reference code for my analysis 
+% This contains both correlation AND residual analysis 
+
 %% paths
 if strcmp(computer, 'MACI64')
-    %datapath = '/Users/Priyanka/Desktop/LABWORK_II/Data/Smellocator/Processed/Behavior/';
     datapath = '/Users/mariedussauze/Desktop/Analysis/data/Smellocator/Processed/Behavior/';
-
 else
     datapath = '/mnt/data/Processed/Behavior/';
 end
@@ -11,7 +12,7 @@ end
 %MySession = fullfile(datapath,'O9','O9_20220630_r0_processed.mat');
 %MySession = fullfile(datapath,'S1','S1_20230314_r0_processed.mat');
 %MySession = fullfile(datapath,'S3','S3_20230321_r0_processed.mat');
-%MySession = fullfile(datapath,'S6','S6_20230727_r0_processed.mat');
+%MySession = fullfile(datapath,'S6','S6_20230727_r0_processed.mat'); % bug
 %MySession = fullfile(datapath,'S7','S7_20230707_r0_processed.mat');
 MySession = fullfile(datapath,'S11','S11_20230812_r0_processed.mat');
 %MySession = fullfile(datapath,'S12','S12_20230727_r0_processed.mat');
@@ -141,7 +142,7 @@ MedianResiduals = ResidualsMean{whichtype};
 STDResiduals = ResidualsSTD{whichtype};
 
 figure;
-subplot(4,1,1);
+subplot(4,1,1); % correlation CL-AR (black) vs AR-AR (pink) 
 xpts = (1:4:4*N);
 % OL-OL
 bar(xpts, MedianCorrs(SortedbyCorr,3),'Facecolor',[1 0.6 0.6],'BarWidth',0.6,'LineStyle','none');
@@ -155,7 +156,7 @@ line(repmat(xpts,2,1), ...
     [(MedianCorrs(SortedbyCorr,1) + STDCorrs(SortedbyCorr,1))'; (MedianCorrs(SortedbyCorr,1) - STDCorrs(SortedbyCorr,1))'], ...
     'color', [0 0 0],'Linewidth', 2);
 
-subplot(4,1,2);
+subplot(4,1,2); % correlation CL-PR (black) vs PR-PR (green) 
 % PR-PR
 xpts = (2:4:4*N);
 bar(xpts, MedianCorrs(SortedbyCorr,5),'Facecolor',[0.4 0.6 0.6],'BarWidth',0.6,'LineStyle','none');
@@ -172,7 +173,7 @@ set(gca, 'XTick', xpts);
 xticklabels(num2str(MyUnits(SortedbyCorr)));
 xtickangle(gca,90);
 
-subplot(4,1,3);
+subplot(4,1,3); % residual CL-AR (black) vs AR-AR (pink) 
 xpts = (1:4:4*N);
 % OL-OL
 bar(xpts, MedianResiduals(SortedbyCorr,3),'Facecolor',[1 0.6 0.6],'BarWidth',0.6,'LineStyle','none');
@@ -186,7 +187,7 @@ line(repmat(xpts,2,1), ...
     [(MedianResiduals(SortedbyCorr,1) + STDResiduals(SortedbyCorr,1))'; (MedianResiduals(SortedbyCorr,1) - STDResiduals(SortedbyCorr,1))'], ...
     'color', [0 0 0],'Linewidth', 2);
 
-subplot(4,1,4);
+subplot(4,1,4); % residual CL-PR (black) vs PR-PR (pink) 
 % PR-PR
 xpts = (2:4:4*N);
 bar(xpts, MedianResiduals(SortedbyCorr,5),'Facecolor',[0.4 0.6 0.6],'BarWidth',0.6,'LineStyle','none');

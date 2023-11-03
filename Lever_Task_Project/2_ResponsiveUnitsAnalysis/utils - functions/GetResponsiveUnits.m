@@ -1,4 +1,10 @@
 function [responsive_units, resp_score] = GetResponsiveUnits(SessionName)
+% INPUT: 
+% SessionName = 'O3/O3_20211005_r0_processed.mat';
+
+% OUTPUT: 
+% responsive_units = vector of units where 1 = responsive and 0 = unresponsive
+% resp_score = unit x odor x event where 1 = activated and 2 = inhibited
 
 % Function to find cells that are responsive to different events of lever
 % task behavior with and without aligning to 1st sniff after trial start: 
@@ -7,6 +13,11 @@ function [responsive_units, resp_score] = GetResponsiveUnits(SessionName)
 % 3) trial off = myEvents(:,3)
 % 4)reward = most times will be the same as trial off
 % 5) 1st TZ entry > 100 ms
+
+% Here neurons are considered responsive if neurons are considered 
+% responsive if their average activity in the window after the event 
+% exceeded the 99th percentile of the reference response (pre event or iti)
+% for all trials.
 
 %% %Settings to be changed depending on analysis performed
 
@@ -30,16 +41,6 @@ threshold = [5 95]; %[1 99] [3 97] [5 95]; [10 90]; = Thresholds to try
 end 
                              
 %% File path
-%SessionName = 'O3/O3_20211005_r0_processed.mat';
-%SessionName = 'O8/O8_20220702_r0_processed.mat';
-%SessionName = 'O9/O9_20220630_r0_processed.mat';
-%SessionName = 'S1/S1_20230314_r0_processed.mat';
-%SessionName = 'S3/S3_20230321_r0_processed.mat';
-%SessionName = 'S6/S6_20230727_r0_processed.mat'; 
-%SessionName = 'S7/S7_20230707_r0_processed.mat'; %% bug
-%SessionName = 'S11/S11_20230812_r0_processed.mat'; 
-%SessionName = 'S12/S12_20230727_r0_processed.mat';
-
 
 if strcmp(computer,  'PCWIN64')
     ProcessedBehaviorPath = 'C:\Users\Marie\Documents\data\Smellocator\Processed\Behavior';
@@ -261,5 +262,4 @@ for unit = 1:NbUnit
     else
         responsive_units(unit,1) = 0;
     end
-    
 end

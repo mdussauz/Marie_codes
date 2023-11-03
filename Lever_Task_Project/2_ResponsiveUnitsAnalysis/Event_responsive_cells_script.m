@@ -7,6 +7,11 @@
 % 4)reward = most times will be the same as trial off
 % 5) 1st TZ entry > 100 ms
 
+% Here neurons are considered responsive if neurons are considered 
+% responsive if their average activity in the window after the event 
+% exceeded the 99th percentile of the reference response (pre event or iti)
+% for all trials.
+
 %% %Settings to be changed depending on analysis performed
 
 % General parameters
