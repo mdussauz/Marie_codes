@@ -1,16 +1,24 @@
 %HaltFlip_analysis_script
 
 %% Sessions
+%AON
 %SessionName = 'O3/O3_20210927_r0_processed.mat';
 %SessionName = 'O3/O3_20210929_r0_processed.mat';
-%SessionName = 'O8/O8_20220704_r0_processed.mat';
+SessionName = 'O8/O8_20220704_r0_processed.mat';
 %SessionName = 'O9/O9_20220702_r1_processed.mat';
 %SessionName = 'S1/S1_20230327_r0_processed.mat';
 %SessionName = 'S3/S3_20230327_r0_processed.mat'; %%not sorted
 %SessionName = 'S6/S6_20230710_r0_processed.mat';
 %SessionName ='S7/S7_20230608_r0_processed.mat';
 %SessionName ='S11/S11_20230801_r0_processed.mat';
-SessionName ='S12/S12_20230731_r0_processed.mat';
+%SessionName ='S12/S12_20230731_r0_processed.mat';
+
+%APC
+%SessionName ='Q3/Q3_20221019_r0_processed.mat'; %file corrupted
+%SessionName ='Q4/Q4_20221109_r0_processed.mat';
+%SessionName ='Q8/Q8_20221207_r0_processed.mat';
+%SessionName ='Q9/Q9_20221116_r0_processed.mat';
+
 
 %% Path
 if strcmp(computer,  'MACI64')

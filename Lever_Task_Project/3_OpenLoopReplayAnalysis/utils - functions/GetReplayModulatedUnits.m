@@ -27,7 +27,7 @@ load(MySession, 'Traces', 'PassiveReplayTraces', 'TrialInfo', ...
 
 OpenLoop = ExtractReplayTrials(Traces, TrialInfo, TTLs, ReplayTTLs);
 
-if exist('whichunit', 'var') %if no specified units, take all
+if exist('whichunit', 'var') &  ~isempty(whichunit)%if no specified units, take all
   SingleUnits = SingleUnits(whichunit);
 end
 

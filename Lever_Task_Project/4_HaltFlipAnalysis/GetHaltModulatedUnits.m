@@ -25,7 +25,7 @@ handles.SortReplay.Value = 1;
     LoadProcessedDataSession(MySession); 
 
 
-if exist('whichunit', 'var') %if no specified units, take all
+if exist('whichunit', 'var') &  ~isempty(whichunit) %if no specified units, take all
   handles.SingleUnits = handles.SingleUnits(whichunit);
 end
 

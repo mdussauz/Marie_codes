@@ -16,7 +16,9 @@
 
 %% paths
 
+
 %AON
+%classic open loop
 %SessionName = fullfile('O3','O3_20211005_r0_processed.mat');
 %SessionName = fullfile('O8','O8_20220702_r0_processed.mat');
 %SessionName = fullfile('O9','O9_20220630_r0_processed.mat');
@@ -24,8 +26,14 @@
 %SessionName = fullfile('S3','S3_20230321_r0_processed.mat');
 %SessionName = fullfile('S6','S6_20230727_r0_processed.mat'); % bug
 %SessionName = fullfile('S7','S7_20230707_r0_processed.mat');
-SessionName = fullfile('S11','S11_20230812_r0_processed.mat');
+%SessionName = fullfile('S11','S11_20230812_r0_processed.mat');
 %SessionName = fullfile('S12','S12_20230727_r0_processed.mat');
+
+%free open loop 
+%SessionName = fullfile('S6','S6_20230718_r0_processed.mat');
+%SessionName = fullfile('S7','S7_20230622_r0_processed.mat');
+SessionName = fullfile('S11','S11_20230805_r0_processed.mat');
+
 
 %APC
 %SessionName = fullfile('Q4','Q4_20221112_r0_processed.mat'); %currently not sorted 
