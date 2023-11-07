@@ -1,16 +1,11 @@
-%HaltFlip_analysis_script
+function [mirror_modulation, location_modulation, replay_modulation, tuning_modulation] = GetHaltModulatedUnits(SessionName, whichunit)
+%INPUT: 
+% - SessionName = 'O3/O3_20211005_r0_processed.mat'
+% - whichunit = which units to include in analysis / leave empty if user 
+% wants to include all cells
 
-%% Sessions
-%SessionName = 'O3/O3_20210927_r0_processed.mat';
-%SessionName = 'O3/O3_20210929_r0_processed.mat';
-%SessionName = 'O8/O8_20220704_r0_processed.mat';
-%SessionName = 'O9/O9_20220702_r1_processed.mat';
-%SessionName = 'S1/S1_20230327_r0_processed.mat';
-%SessionName = 'S3/S3_20230327_r0_processed.mat'; %%not sorted
-%SessionName = 'S6/S6_20230710_r0_processed.mat';
-%SessionName ='S7/S7_20230608_r0_processed.mat';
-%SessionName ='S11/S11_20230801_r0_processed.mat';
-SessionName ='S12/S12_20230731_r0_processed.mat';
+% OUTPUT:
+% - modulation = 1 if unit is positively modulated / 2 if negatively modulated / 0 if unmodulated
 
 %% Path
 if strcmp(computer,  'MACI64')
@@ -29,11 +24,15 @@ handles.SortReplay.Value = 1;
     ReplayTTLs, SampleRate, TimestampAdjuster, PassiveTracesOut, StartStopIdx, OpenLoop, handles.Tuning] = ...
     LoadProcessedDataSession(MySession); 
 
-Nb_unit = size(handles.SingleUnits,2);
-ChosenUnits = 1:Nb_unit;
 
+if exist('whichunit', 'var') %if no specified units, take all
+  handles.SingleUnits = handles.SingleUnits(whichunit);
+end
+
+Nb_unit = size(handles.SingleUnits,2);
 %% get the closed loop tuning curve
 %TuningCurve = location x (mean std) x units x odor > for PG code
+ChosenUnits = 1:Nb_unit;
 [TuningCurve, XBins, PairedCorrs, PairedResiduals, ControlCorrs, ControlResiduals] = ...
     GetOdorTuningCurves_MD(SessionName, ChosenUnits, 'tuningbins', 15);
 % in the MD version of the GetOdorTuningCurves also contains the median and sample number (idx) 
@@ -350,54 +349,4 @@ for i = 1:Nb_unit
         tuning_modulation(i) = 0;
     end
 end
-
-%% % PLOTTING %%%
-
-%%  PLOTTING FOR MIRROR AND TUNING CURVE COMPARISONS
-
-figure(1) % mean perturbation response vs. mean mirror location response
-title('halt vs mirror location response')
-for i = 1:Nb_unit
-    plot(mean(AreaUnderCurve.Odor(11:12,i)),mean(AreaUnderCurve.Halt([1 5 9],i)),...
-        'o', 'MarkerFaceColor', [0.7 0.7 0.7], 'MarkerEdgeColor', 'none');
-    set(gca,'XLim',[0 40],'YLim',[0 40])
-    line([0 40],[0 40],'Color','k')
-    hold on
-end
-
-
-figure(2) % expected vs actual
-title('halt vs tuning curve response')
-haltlocation = 30;
-WhichBin = find(mean(XBins,2)==haltlocation);
-Expected = squeeze(TuningCurve.ClosedLoopFull(WhichBin,:,:,whichodor))';
-Actual = squeeze(mean(AreaUnderCurve.Halt([1 5 9],:),1));
-
-hold on; axis square
-plot(Expected(:,1),Actual, 'o', 'MarkerFaceColor', [0.7 0.7 0.7], 'MarkerEdgeColor', 'none');
-set(gca,'XLim',[0 40],'YLim',[0 40])
-line([0 40],[0 40],'Color','k')
-
-
-%% PASSIVE AND TUNING ARE FIXED
-if ~isempty(handles.ReplayAlignedSniffs)
-figure(3) %mean active perturbation response vs mean passive perturbation response
-title('halt vs passive halt response')
-for i = 1:Nb_unit
-    plot(mean(AreaUnderCurve.PassiveHalt([1 5 9],i)),mean(AreaUnderCurve.Halt([1 5 9],i)),...
-        'o', 'MarkerFaceColor', [0.7 0.7 0.7], 'MarkerEdgeColor', 'none');
-    set(gca,'XLim',[0 40],'YLim',[0 40])
-    line([0 40],[0 40],'Color','k')
-    hold on
-end
-end 
-
-figure(4) %mean perturbation response vs mean tuning response at same location
-title('halt vs passive tuning response')
-for i = 1:Nb_unit
-    plot(AreaUnderCurve.Tuning(i),mean(AreaUnderCurve.Halt([1 5 9],i)),...
-        'o', 'MarkerFaceColor', [0.7 0.7 0.7], 'MarkerEdgeColor', 'none');
-    set(gca,'XLim',[0 40],'YLim',[0 40])
-    line([0 40],[0 40],'Color','k')
-    hold on
 end

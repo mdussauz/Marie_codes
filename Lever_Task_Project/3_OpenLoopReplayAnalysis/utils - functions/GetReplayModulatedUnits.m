@@ -1,11 +1,14 @@
 function [modulated_units,modulation_score, ResidualsMean, ResidualsCI95] = GetReplayModulatedUnits(SessionName, whichunit)
 %INPUT: 
-% Example SessionName = 'O3/O3_20211005_r0_processed.mat'
-% whichunit = which units to include in analysis / leave empty if user 
+% - SessionName = 'O3/O3_20211005_r0_processed.mat'
+% - whichunit = which units to include in analysis / leave empty if user 
 % wants to include all cells
 
 % OUTPUT:
-% modulation_score dim = odor x unit x comparison ((1)CL/AR and (2)CL/PR)
+% - modulated_units = 1 if unit is modulated / 0 if unmodulated
+% - modulation_score dim = odor x unit x comparison ((1)CL/AR and (2)CL/PR)
+% - ResidualsMean and ResidualsCI95 of all cells to allow to plot scatter plot
+% across all sessions
 
 %% paths
 
@@ -24,7 +27,7 @@ load(MySession, 'Traces', 'PassiveReplayTraces', 'TrialInfo', ...
 
 OpenLoop = ExtractReplayTrials(Traces, TrialInfo, TTLs, ReplayTTLs);
 
-if ~isempty(whichunit) %if no specified units, take all
+if exist('whichunit', 'var') %if no specified units, take all
   SingleUnits = SingleUnits(whichunit);
 end
 

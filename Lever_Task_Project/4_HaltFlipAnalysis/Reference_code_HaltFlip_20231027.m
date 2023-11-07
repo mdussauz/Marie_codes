@@ -2,14 +2,14 @@
 
 %% Sessions
 %SessionPath = 'O3/O3_20210929_r0_processed.mat';
-SessionPath = 'O8/O8_20220704_r0_processed.mat';
-%SessionPath = 'O9/O9_20220702_r0_processed.mat';
+%SessionPath = 'O8/O8_20220704_r0_processed.mat';
+%SessionPath = 'O9/O9_20220702_r1_processed.mat';
 %SessionPath = 'S1/S1_20230327_r0_processed.mat';
 %SessionPath = 'S3/S3_20230327_r0_processed.mat'; %%not sorted
-%SessionPath = 'S6/S6_20230710_r0_processed.mat';
+%SessionPath = 'S6/S6_20230710_r0_processed.mat'; % bug again with this mouse ...
 %SessionPath ='S7/S7_20230608_r0_processed.mat';
 %SessionPath ='S11/S11_20230801_r0_processed.mat';
-%SessionPath ='S12/S12_20230731_r0_processed.mat';
+SessionPath ='S12/S12_20230731_r0_processed.mat';
 %% DataExtraction
 if strcmp(computer,  'MACI64')
     datapath = '/Users/mariedussauze/Desktop/Analysis/data/Smellocator/Processed/Behavior';
@@ -26,6 +26,7 @@ load(MySession, 'Traces', 'PassiveReplayTraces', 'TrialInfo', ...
 ChosenUnits = 1:size(SingleUnits,2); 
 
 %% get the closed loop tuning curve
+%TuningCurve = location x (mean std) x units x odor 
 [TuningCurve, XBins, PairedCorrs, PairedResiduals, ControlCorrs, ControlResiduals] = ...
     GetOdorTuningCurves(SessionPath, ChosenUnits, 'tuningbins', 15); %, 'binsize', 4);
 
@@ -42,8 +43,14 @@ TrialInfo.TargetEntry = NaN*TrialInfo.Odor;
 % Get all spikes, all units aligned to trials
 [AlignedSpikes, Events] = TrialAlignedSpikeTimes(SingleUnits,TTLs,...
     size(TrialInfo.TrialID,2),TrialInfo,MySession);
-
-whichOdor = 1;
+%% halted odor based on mouse
+if strcmp(fileparts(SessionPath), 'S6')
+    whichOdor = 3;
+elseif any(strcmp(fileparts(SessionPath), {'S7','S11','S12'}))
+    whichOdor = 2;
+else
+    whichOdor = 1;
+end
 %%
 for tz = 1:12
     whichTrials = intersect(find(cellfun(@isempty, TrialInfo.Perturbation(:,1))), ...
@@ -106,7 +113,9 @@ axis square
 subplot(1,2,2); 
 hold on
 axis square
-whichcol = 1;
+
+whichcol = 1; % full CL
+
 for i = 1:size(SingleUnits,2)
     % mean perturbation response vs. mean mirror location response
     subplot(1,2,1);
