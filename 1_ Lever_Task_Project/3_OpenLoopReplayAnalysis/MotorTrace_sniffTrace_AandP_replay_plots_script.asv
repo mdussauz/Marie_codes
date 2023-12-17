@@ -108,18 +108,6 @@ for i = 1:NumActiveReplays
     if i ==1
         title('Active Replay Lever Trace for each repeat')
     end
-
-y_cutoff = length(OpenLoop.ReplayTraces.Lever{1, 1}(:,1));
-TemplateLeverTrace = OpenLoop.TemplateTraces.Lever{1,1}(1:y_cutoff);
-%There are NaN in the lever trace so fill them
-TemplateTrace = fillmissing(TemplateLeverTrace,'nearest');
-corre(i) = corr(TemplateTrace,OpenLoop.ReplayTraces.Lever{1, 1}(:,i));
-
 end
 
-
-
-for 
-
-
-
+TemplateLeverTrace = OpenLoop.TemplateTraces.Lever{1,1}(1:length(OpenLoop.ReplayTraces.Lever{1, 1}(:,1)))

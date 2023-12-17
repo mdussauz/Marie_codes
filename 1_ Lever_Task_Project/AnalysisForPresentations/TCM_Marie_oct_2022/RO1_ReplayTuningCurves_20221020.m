@@ -6,7 +6,7 @@
 % and plotting of tuning curves and rasters + PSTHs for each cond
 
 %% USER - select which mouse open loop session to analyze
-mousename = 'O3';
+mousename = 'S12';
 %% USER - turn on/off response plotting (tuning curve, raster and psth)
 % doesn't turn off the cumulative frequency plot
 Toplot =0; %1 for ON
@@ -50,6 +50,9 @@ ChosenUnits = []; %ChosenUnits = [8 21 28 55 39]; %MyUnits = [8 35 28 55 39];
 SessionPath = 'PCX4/PCX4_20210721_r0_processed.mat';
 ChosenUnits = [2 38 45 55 64]; % may be 38
 
+    case 'S12'
+SessionPath = fullfile('S12','S12_20230727_r0_processed.mat');
+ChosenUnits = [];
 end
 
 %% get tuning curves
