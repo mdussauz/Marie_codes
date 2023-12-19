@@ -7,6 +7,8 @@ function [mirror_modulation, location_modulation, replay_modulation, tuning_modu
 % OUTPUT:
 % - modulation = 1 if unit is positively modulated / 2 if negatively modulated / 0 if unmodulated
 
+% NB: only 3 tz types are concerned by halt trials
+
 %% Path
 if strcmp(computer,  'MACI64')
     datapath = '/Users/mariedussauze/Desktop/Analysis/data/Smellocator/Processed/Behavior';
@@ -295,7 +297,7 @@ for i = 1:Nb_unit
 end
 
 %% COMPARE MEAN PERTURBATION RESPONSE TO PERTURBATION REPLAY - need to change to have all repeats
-%% Here modifyimg to compare median and only computing CI for replay (hoping there is more in here but actually needs to be included)
+%% Here modifying to compare median and only computing CI for replay (hoping there is more in here but actually needs to be included)
 if ~isempty(handles.ReplayAlignedSniffs)
 for i = 1:Nb_unit
     nsamps_halt = length(AreaUnderCurve.Halt([1 5 9],i));

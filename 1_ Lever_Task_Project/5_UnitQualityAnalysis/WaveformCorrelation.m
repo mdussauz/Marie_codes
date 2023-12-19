@@ -55,8 +55,8 @@ for mycluster = 1:length(sp.cids) % for each cluster
     % cluster(mycluster).ISIquality = [round(fpRate,2,'significant'), round(numViolations/(numel(allspikes)-1),2,'significant')];
     cluster(mycluster).spikescaling = sp.tempScalingAmps;
     cluster(mycluster).clusterscalingorder = sp.clu;
+    
     %% get all spikewaveforms
-    % get all spikewaveforms
     gwfparams.dataDir = myKsDir;         % KiloSort/Phy output folder
     gwfparams.fileName = sp.dat_path;    % .dat file containing the raw
     gwfparams.dataType = sp.dtype;       % Data type of .dat file (this should be BP filtered)
