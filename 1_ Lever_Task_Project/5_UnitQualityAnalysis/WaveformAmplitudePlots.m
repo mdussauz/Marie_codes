@@ -1,6 +1,24 @@
 %WaveformAmplitudeViewPlots
 %% paths
-SessionName = fullfile('S12','S12_20230727_r0_processed.mat');
+
+%Classic OL
+%SessionName = 'O3/O3_20211005_r0_processed.mat';
+%SessionName = 'O8/O8_20220702_r0_processed.mat';
+%SessionName = 'O9/O9_20220630_r0_processed.mat';
+%SessionName = 'S1/S1_20230314_r0_processed.mat';
+%SessionName = 'S3/S3_20230321_r0_processed.mat';
+%SessionName = 'S6/S6_20230727_r0_processed.mat'; 
+% SessionName = 'S7/S7_20230707_r0_processed.mat';
+% SessionName = 'S11/S11_20230812_r0_processed.mat';
+% SessionName = 'S12/S12_20230727_r0_processed.mat';
+
+%Free lever
+% SessionName = 'S6/S6_20230718_r0_processed.mat';
+%SessionName = 'S7/S7_20230622_r0_processed.mat';
+% SessionName = 'S11/S11_20230805_r0_processed.mat';
+
+% Mid Session
+MySession = fullfile(datapath,'S11', 'S11_20230813_r0_r1_o0_o1_processed');
 
 if strcmp(computer, 'MACI64')
     ProcessedBehaviorPath = '/Users/mariedussauze/Desktop/Analysis/data/Smellocator/Processed/Behavior/';

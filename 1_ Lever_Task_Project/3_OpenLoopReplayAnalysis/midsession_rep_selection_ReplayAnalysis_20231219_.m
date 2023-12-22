@@ -8,22 +8,14 @@ else
     datapath = '/mnt/data/Processed/Behavior/';
 end
 
-% Classic OL
-%MySession = fullfile(datapath,'O3','O3_20211005_r0_processed.mat');
-%MySession = fullfile(datapath,'O8','O8_20220702_r0_processed.mat');
-%MySession = fullfile(datapath,'O9','O9_20220630_r0_processed.mat');
-%MySession = fullfile(datapath,'S1','S1_20230314_r0_processed.mat');
-%MySession = fullfile(datapath,'S3','S3_20230321_r0_processed.mat');
-%MySession = fullfile(datapath,'S6','S6_20230727_r0_processed.mat'); % bug
-%MySession = fullfile(datapath,'S7','S7_20230707_r0_processed.mat');
-%MySession = fullfile(datapath,'S11','S11_20230812_r0_processed.mat');
-%MySession = fullfile(datapath,'S12','S12_20230727_r0_processed.mat');
-
-%MySession = fullfile(datapath,'Q4','Q4_20221112_r0_processed.mat');
-%MySession = fullfile(datapath,'Q9','Q9_20221119_r0_processed.mat');
-
 % Mid Session OL
+% MySession = fullfile(datapath,'S1', 'S1_20230329_r0_r2_o0_o1_o2_processed.mat');
+% MySession = fullfile(datapath,'S3', 'S3_20230329_r0_r1_o0_o1_processed.mat');
+% MySession = fullfile(datapath,'S6', 'S6_20230713_r0_r1_o0_o1_processed.mat');
+% MySession = fullfile(datapath,'S6', 'S6_20230713_r0_r1_o0_o1_processed.mat');
+% MySession = fullfile(datapath,'S7', 'S7_20230705_r0_r1_o0_o1_processed.mat');
 MySession = fullfile(datapath,'S11', 'S11_20230813_r0_r1_o0_o1_processed');
+% MySession = fullfile(datapath,'S12', 'S12_20230809_r0_r1_o0_o1_processed.mat');
 
 %% get the processed data loaded and assemble open loop traces
 load(MySession, 'Traces', 'PassiveReplayTraces', 'TrialInfo', ...
@@ -40,14 +32,18 @@ foo = cell2mat(arrayfun(@(x) [x.tetrode; x.id], SingleUnits, 'UniformOutput', fa
 [~, MyUnits] = sortrows(foo,[1 2]);
 
 [OpenLoopTraces,OpenLoopTimestamps,OpenLoopPSTH,OpenLoopRaster] = ...
-        ProcessOpenLoopTrials(OpenLoop, TrialInfo, SingleUnits, TTLs, ...
+        ProcessOpenLoopTrialsMD(OpenLoop, TrialInfo, SingleUnits, TTLs, ...
         'whichunits', MyUnits, 'PSTHsmooth', 100, ...
         'plotfigures', 0);
 
-num_OL = numel(find(ReplayTTLs.TrialID<=TrialInfo.TrialID(end))); % active replays
+num_OL = numel(find(ReplayTTLs.TrialID<=max(TrialInfo.TrialID))); % active replays
 num_PR = numel(ReplayTTLs.TrialID) - num_OL; % passive replays
 reps_per_condition = [1 num_OL num_PR]; % CL, OL, PR
 
+%% Bypassing to select specific repeats
+OpenLoopPSTH = OpenLoopPSTH([1 2 3 4 8 9 10],:,:);
+num_PR = 3;
+reps_per_condition = [1 3 3];
 %% using the whole PSTH or just select timepoints eg. specific odor for comparison across conditions
 
 % first get full timeseries values
@@ -135,6 +131,49 @@ for i = 1:4
         ResidualsCI95{i}(:,x)       = ts(2)*std(PSTHResiduals{i}(find(ResidualTags==U(x)),:),'omitnan')'/sqrt(nsamps);
     end
 end
+
+%% CI95 comparison
+OdorPSTHResiduals = {PSTHResiduals{2:4}};
+comparisons = [3 1; 5 2]; % 3-1 = OL-OL vs OL-CL and 5-2 = PR-PR vs PR-CL
+
+for odor = 1:4
+    for unit = 1:N
+        for x = 1:length(comparisons)
+            temp_median_control = ResidualsMedian{odor}(unit,comparisons(x,1));
+            temp_CI_control = ResidualsCI95{odor}(unit,comparisons(x,1));
+
+            temp_median_tested = ResidualsMedian{odor}(unit,comparisons(x,2));
+            temp_CI_tested = ResidualsCI95{odor}(unit,comparisons(x,2));
+            
+            if (temp_median_control + temp_CI_control) < (temp_median_tested - temp_CI_tested)
+                modulation_score(odor,unit,x)=1;
+
+            elseif (temp_median_control - temp_CI_control) > (temp_median_tested + temp_CI_tested)
+                modulation_score(odor,unit,x)=2;
+
+            else
+                modulation_score(odor,unit,x)=0;
+
+            end
+        end
+    end
+end
+
+% I'm going to assume that only if the residual of cross conditions
+% conparison that are superior to the residual of withing condition are
+% worth keeping 
+
+modulated_units   = NaN(N,2);
+
+for unit = 1:N
+    for condition = 1:2
+        if any(squeeze(modulation_score(2:4,unit,condition))==1, 'all')
+            modulated_units(unit,condition) = 1;
+        else
+            modulated_units(unit,condition) = 0;
+        end
+    end
+end
 %% Plotting the outcomes
 % Reorder Units by decreasing OL-OL correlation
 [~,SortedbyCorr] = sort(CorrsMedian{1}(:,3),'descend');
@@ -143,7 +182,7 @@ SortedbyCorr = circshift(SortedbyCorr,-1); % first value was NaN'
 whichtype = 4;
 MedianCorrs = CorrsMedian{whichtype};
 STDCorrs = CorrsSTD{whichtype};
-MedianResiduals = ResidualsMean{whichtype};
+MedianResiduals = ResidualsMedian{whichtype};
 STDResiduals = ResidualsSTD{whichtype};
 
 figure;
@@ -155,11 +194,13 @@ hold on
 line(repmat(xpts,2,1), ...
     [(MedianCorrs(SortedbyCorr,3) + STDCorrs(SortedbyCorr,3))'; (MedianCorrs(SortedbyCorr,3) - STDCorrs(SortedbyCorr,3))'], ...
     'color', [1 0 0], 'Linewidth', 2);
+
 %CL-OL
 bar(xpts, MedianCorrs(SortedbyCorr,1),'Edgecolor','k','Facecolor','none','BarWidth',0.75,'Linewidth', 2);
 line(repmat(xpts,2,1), ...
     [(MedianCorrs(SortedbyCorr,1) + STDCorrs(SortedbyCorr,1))'; (MedianCorrs(SortedbyCorr,1) - STDCorrs(SortedbyCorr,1))'], ...
     'color', [0 0 0],'Linewidth', 2);
+title('Correlation AR-AR(pink) vs CL-AR (black)')
 
 subplot(4,1,2); % correlation CL-PR (black) vs PR-PR (green) 
 % PR-PR
@@ -177,6 +218,7 @@ line(repmat(xpts,2,1), ...
 set(gca, 'XTick', xpts);
 xticklabels(num2str(MyUnits(SortedbyCorr)));
 xtickangle(gca,90);
+title('Correlation PR-PR(green) vs CL-PR (black)')
 
 subplot(4,1,3); % residual CL-AR (black) vs AR-AR (pink) 
 xpts = (1:4:4*N);
@@ -191,6 +233,7 @@ bar(xpts, MedianResiduals(SortedbyCorr,1),'Edgecolor','k','Facecolor','none','Ba
 line(repmat(xpts,2,1), ...
     [(MedianResiduals(SortedbyCorr,1) + STDResiduals(SortedbyCorr,1))'; (MedianResiduals(SortedbyCorr,1) - STDResiduals(SortedbyCorr,1))'], ...
     'color', [0 0 0],'Linewidth', 2);
+title('Residual AR-AR(pink) vs CL-AR (black)')
 
 subplot(4,1,4); % residual CL-PR (black) vs PR-PR (pink) 
 % PR-PR
@@ -208,6 +251,7 @@ line(repmat(xpts,2,1), ...
 set(gca, 'XTick', xpts);
 xticklabels(num2str(MyUnits(SortedbyCorr)));
 xtickangle(gca,90);
+title('Residual PR-PR(green) vs CL-PR (black)')
 
 %% scatter plot of self vs. across condition residuals
 figure, 
@@ -219,7 +263,7 @@ for whichtype = 2:4
     MedianCorrs = [MedianCorrs;  CorrsMedian{whichtype}];
     STDCorrs = [STDCorrs; CorrsSTD{whichtype}];
 
-    MedianResiduals = [MedianResiduals; ResidualsMean{whichtype}];
+    MedianResiduals = [MedianResiduals;  ResidualsMedian{whichtype}];
     STDResiduals = [STDResiduals; ResidualsCI95{whichtype}];
 end
 
@@ -228,7 +272,8 @@ end
     plot(MedianResiduals(sortorder,5),MedianResiduals(sortorder,5) + STDResiduals(sortorder,5),':k');
     plot(MedianResiduals(sortorder,5),MedianResiduals(sortorder,5) - STDResiduals(sortorder,5),':k');
     plot(MedianResiduals(sortorder,5),MedianResiduals(sortorder,5),'k');
-    plot(MedianResiduals(sortorder,5),MedianResiduals(sortorder,2),'or');
+    plot(MedianResiduals(sortorder,5),MedianResiduals(sortorder,2),'.r');
+    title('CL-PR')
     axis square;
     set(gca,'TickDir','out','YLim',[0 20],'XLim',[0 20]);
     subplot(1,2,2)
@@ -236,9 +281,10 @@ end
     plot(MedianResiduals(sortorder,3),MedianResiduals(sortorder,3) + STDResiduals(sortorder,3),':k');
     plot(MedianResiduals(sortorder,3),MedianResiduals(sortorder,3) - STDResiduals(sortorder,3),':k');
     plot(MedianResiduals(sortorder,3),MedianResiduals(sortorder,3),'k');
-    plot(MedianResiduals(sortorder,3),MedianResiduals(sortorder,1),'or');
+    plot(MedianResiduals(sortorder,3),MedianResiduals(sortorder,1),'.r');
     axis square;
     set(gca,'TickDir','out','YLim',[0 20],'XLim',[0 20]);
+    title('OL-PR')
 
 %%
 figure;
@@ -293,9 +339,8 @@ axis square
 %%
 % Plot specific Units
 %PlotUnits = [58 35 34 55 21];
-PlotUnits = [34 55 27 32 30 51 6 26 57 52 41 46 12 44 28];
-PlotUnits = [55 44 39 28 10];
-ProcessOpenLoopTrials(OpenLoop, TrialInfo, SingleUnits, TTLs, ...
+PlotUnits = [11 89 20 81 45 8 92 70 57 100 86 42];
+ProcessOpenLoopTrialsMD(OpenLoop, TrialInfo, SingleUnits, TTLs, ...
         'plotephys', 1, 'UnitsPerFig', 5, 'whichunits', PlotUnits, 'PlotOpenLoop', 1);
 
 

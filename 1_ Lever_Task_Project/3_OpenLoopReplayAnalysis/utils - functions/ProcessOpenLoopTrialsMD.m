@@ -35,14 +35,16 @@ global TargetZones;
 global startoffset;
 
 if isempty(allreplays)
-    allreplays = 1:numel(Replay.TemplateTraces.TrialIDs);
+    allreplays = 1:numel(Replay.ReplayTraces.TrialIDs);
 end
 
 if ~isempty(SingleUnits) && isempty(whichUnits)
     whichUnits = 1:size(SingleUnits,2);
 end
 
-PassiveReplays = Replay.TTLs.TrialID(Replay.TTLs.TrialID>max(TrialInfo.TrialID));
+% added this for mid session PR:
+lastAR_trial =  max(find(strcmp(TrialInfo.Perturbation,'OL-Replay')));
+PassiveReplays = Replay.TTLs.TrialID(Replay.TTLs.TrialID>lastAR_trial);
 
 for x = 1:numel(allreplays) % for every unique replay stretch
     whichreplay = allreplays(x);

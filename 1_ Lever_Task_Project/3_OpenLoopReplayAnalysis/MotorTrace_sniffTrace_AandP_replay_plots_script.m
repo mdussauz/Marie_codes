@@ -30,6 +30,7 @@ load(MySession, 'Traces', 'PassiveReplayTraces', 'TrialInfo', ...
                 'SingleUnits', 'TTLs', 'ReplayTTLs', 'TuningTTLs', ...
                 'SampleRate', 'startoffset', 'TargetZones', 'errorflags');
 
+%%
 OpenLoop = ExtractReplayTrials(Traces, TrialInfo, TTLs, ReplayTTLs);
 
 %% Get the replay traces and spikes
@@ -119,7 +120,7 @@ end
 
 
 
-for 
+ 
 
 
 
