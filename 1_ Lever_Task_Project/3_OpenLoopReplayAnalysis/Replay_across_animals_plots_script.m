@@ -1,23 +1,34 @@
 %Replay_across_animals_plots_script
-%% Classic open loop sessions
-% SessionName = {'O3/O3_20211005_r0_processed.mat',...
-% 'O8/O8_20220702_r0_processed.mat',...
-% 'O9/O9_20220630_r0_processed.mat',...
-% 'S1/S1_20230314_r0_processed.mat',...
-% 'S3/S3_20230321_r0_processed.mat',...
-% 'S6/S6_20230718_r0_processed.mat',... % !!!this session is a free lever one - to be changed when classic is fixed!!!
-% 'S7/S7_20230707_r0_processed.mat',... 
-% 'S11/S11_20230812_r0_processed.mat',...
-% 'S12/S12_20230727_r0_processed.mat'};
 
-%% Free lever Passive Replay
-SessionName = {...   
+
+% Specifify which type of OL session
+%OL = "classic" ;
+OL = "free";
+
+switch OL
+    case "classic"
+% Classic open loop sessions
+SessionName = {'O3/O3_20211005_r0_processed.mat',...
+'O8/O8_20220702_r0_processed.mat',...
+'O9/O9_20220630_r0_processed.mat',...
+'S1/S1_20230314_r0_processed.mat',...
+'S6/S6_20230727_r0_processed.mat',... 
+'S7/S7_20230707_r0_processed.mat',... 
+'S11/S11_20230812_r0_processed.mat',...
+'S12/S12_20230727_r0_processed.mat'};
+%% 'S3/S3_20230321_r0_processed.mat',... % this mouse is problematic in terms of rec quality so removed 
+
+    case "free"
+% Free lever Passive Replay
+SessionName = {...  
+'S1/S1_20230403_r0_processed.mat',... 
 'S6/S6_20230718_r0_processed.mat',...
 'S7/S7_20230622_r0_processed.mat',... 
-'S11/S11_20230805_r0_processed.mat'...
+'S11/S11_20230805_r0_processed.mat',...
+'S12/S12_20230804_r0_processed.mat'...
 };
 
-
+end
 %% for all units
 
 ResidualsMean = [];
@@ -29,7 +40,7 @@ whichunit = [];
 for session = 1:length(SessionName)
     MouseName{session} = fileparts(SessionName{session});
     [Thismodulated_units,Thismodulation_score, ThisResidualsMean, ...
-        ThisResidualsMedian, ThisResidualsCI95] = GetReplayModulatedUnits(SessionName {session}, whichunit);
+        ThisResidualsMedian, ThisResidualsCI95] = GetReplayModulatedUnits_v2(SessionName {session}, whichunit);
     
     Nb_unit(session) = size(Thismodulated_units,1);
     Nb_mod_units_AR(session) = sum(Thismodulated_units(:,1));
@@ -63,7 +74,7 @@ for session = 1:length(SessionName)
     whichunit = find(responsive_units~=0);
 
     [FiltThismodulated_units, FiltThismodulation_score, FiltThisResidualsMean, ...
-        FiltThisResidualsMedian, FiltThisResidualsCI95] = GetReplayModulatedUnits(SessionName {session}, whichunit);
+        FiltThisResidualsMedian, FiltThisResidualsCI95] = GetReplayModulatedUnits_v2(SessionName {session}, whichunit);
     
     FiltNb_unit(session) = size(FiltThismodulated_units,1);
     FiltNb_resp_units_AR(session) = sum(FiltThismodulated_units(:,1));
@@ -109,7 +120,7 @@ boxchart(y, 'MarkerColor',"#A2142F", 'BoxWidth',0.4, 'BoxFaceColor','k');
 set(gca,'box','off','color','none','TickDir','out','XTickLabelRotation' ,45,'linewidth',2,...
     'fontname','calibri','fontsize',12)
 ylim([0 100])
-yticks(20:20:100)
+yticks(0:20:100)
 hold on
 plot(mean(y),'.','MarkerSize',12,'Color','k')
 hold off
@@ -123,7 +134,7 @@ y = [perc_modulated_PR]';
 b = bar(y);
 b.FaceColor = [0 0 0];
 ylim([0 100])
-yticks(20:20:100)
+yticks(0:20:100)
 set(gca,'box','off','color','none','TickDir','out','linewidth',2,...
     'fontname','calibri','fontsize',12,'XColor', 'none')
 
@@ -138,7 +149,7 @@ boxchart(y, 'MarkerColor',"#A2142F", 'BoxWidth',0.4, 'BoxFaceColor','k');
 set(gca,'box','off','color','none','TickDir','out','XTickLabelRotation' ,45,'linewidth',2,...
     'fontname','calibri','fontsize',12,'XColor', 'none')
 ylim([0 100])
-yticks(20:20:100)
+yticks(0:20:100)
 hold on
 plot(mean(y),'.','MarkerSize',12,'Color','k')
 hold off

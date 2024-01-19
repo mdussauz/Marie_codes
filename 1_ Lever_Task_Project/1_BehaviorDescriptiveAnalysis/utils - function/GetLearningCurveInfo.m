@@ -1,4 +1,4 @@
-function [NumTrials, SuccessRate, MaxTargetHold, TotalTargetStay,...
+function [NumTrials, SuccessRate, MaxTargetHold, TotalTargetStay,TrialLength...
     ExpertReached, AllMotorLocInTrial, AllCenteredLeverInTrial] ...
     = GetLearningCurveInfo(MyFilePath)
 
@@ -22,18 +22,23 @@ NumTrials = NaN(numFiles,1);
 SuccessRate = NaN(numFiles,1);
 MaxTargetHold = NaN(numFiles,1);
 TotalTargetStay = NaN(numFiles,1);
+TrialLength = NaN(numFiles,1);
 AllMotorLocInTrial = num2cell(NaN(1,numFiles)); 
 AllCenteredLeverInTrial = num2cell(NaN(1,numFiles)); 
 SessionCounter =0;
 
 
 for k = 1 : numFiles
+    if k > 30 %end program after 30 sessions
+        break
+    end
     % Get file name of one behavior mat file
     thisFileName = fullfile(pwd, sessionFiles(k).name);
     fprintf('Processing "%s".\n', sessionFiles(k).name);
     % Load behavior variables
         if  any(strcmp(sessionFiles(k).name,{'S1_20230307_r0.mat',...
-                'S6_20230525_r0.mat','S11_20230621_r0.mat'}))
+                'S6_20230525_r0.mat','S11_20230621_r0.mat','S11_20230729_r0.mat',...
+                'S11_20230813_r0.mat','S1_20230323_r0.mat'}))
             fprintf('Session skipped because problematic')
             continue % this session is problematic so skip this loop iteration and go to next one
         end
@@ -41,7 +46,8 @@ for k = 1 : numFiles
        
     % Break out of loop if no odor session session 
     if any(strcmp(TrialInfo.Perturbation,'NoOdor'))
-        break
+        %break - optional break out if get to no odor session
+        ExpertReached = SessionCounter; % number of session before no odor = expert level
     end 
     
     % Getting trials number and sucess rate of this session
@@ -65,6 +71,10 @@ for k = 1 : numFiles
         end
     end
     TotalTargetStay(k) = round(mean(TrialTotalTargetStay)*1000);
+
+    % Get the mean trial duration for this session
+    TrialLength(k) = round(mean(TrialInfo.Duration)*1000);
+
 
     % Get the distribution of motor locations when trial is on for all trials 
     AllMotorLocations = vertcat(Traces.Motor{:,:});
@@ -92,6 +102,6 @@ for k = 1 : numFiles
     SessionCounter = SessionCounter+1; 
 
 end
-ExpertReached = SessionCounter; % number of session before no odor = expert level
+
 end 
 

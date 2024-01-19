@@ -69,7 +69,9 @@ else
 end
 
 if strcmp(SessionName,'S12/S12_20230727_r0_processed.mat') 
-    if ~exist('whichARrep', 'var') 
+    if exist('whichARrep', 'var') &&  ~isempty(whichARrep)
+        whichrep = [1 whichARrep whichPRrep];
+    else
         reps_per_condition = [1 8 4];
     end 
 end 

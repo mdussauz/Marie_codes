@@ -115,10 +115,10 @@ TemplateLeverTrace = OpenLoop.TemplateTraces.Lever{1,1}(1:y_cutoff);
 %There are NaN in the lever trace so fill them
 TemplateTrace = fillmissing(TemplateLeverTrace,'nearest');
 distanceTemplate = sum(abs(diff(TemplateTrace)));
-corr_activetrace(i) = corr(TemplateTrace,OpenLoop.ReplayTraces.Lever{1, 1}(:,i));
-var_activetrace(i) = var(OpenLoop.ReplayTraces.Lever{1, 1}(:,i));
-residuals_activetrace(i) = mean((TemplateTrace - OpenLoop.ReplayTraces.Lever{1, 1}(:,i)).^2)';
-distance_ActiveReplays(i) = sum(abs(diff(OpenLoop.ReplayTraces.Lever{1, 1}(:,i))));
+activetracecorr(i) = corr(TemplateTrace,OpenLoop.ReplayTraces.Lever{1, 1}(:,i));
+activetracevar(i) = var(OpenLoop.ReplayTraces.Lever{1, 1}(:,i));
+activetraceresiduals(i) = mean((TemplateTrace - OpenLoop.ReplayTraces.Lever{1, 1}(:,i)).^2)';
+distanceActiveReplays(i) = sum(abs(diff(OpenLoop.ReplayTraces.Lever{1, 1}(:,i))));
 
 end
 
@@ -147,10 +147,10 @@ for i = 1:NumPassiveReplays
 %If there are NaN in the lever trace, fill them
 TemplateTrace = fillmissing(TemplateLeverTrace,'nearest');
 distanceTemplate = sum(abs(diff(TemplateTrace)));
-coor_passivetrace(i) = corr(TemplateTrace,ThisPassiveReplayLeverTrace);
-var_passivetrace(i) = var(ThisPassiveReplayLeverTrace;
-residuals_passivetrace(i) = mean((TemplateTrace - ThisPassiveReplayLeverTrace).^2)';
-distance_PassiveReplays(i) = sum(abs(diff(ThisPassiveReplayLeverTrace)));
+passivetrace_corr(i) = corr(TemplateTrace,PassiveReplayTraces.Lever{1, i});
+passivetrace_var(i) = var(PassiveReplayTraces.Lever{1, i});
+distancePassiveReplays(i) = sum(abs(diff(PassiveReplayTraces.Lever{1, i})));
+passivetraceresiduals(i) = mean((TemplateTrace - PassiveReplayTraces.Lever{1, i}).^2)';
 
 end
 

@@ -7,17 +7,17 @@
 SessionName = 'O8/O8_20220704_r0_processed.mat';
 %SessionName = 'O9/O9_20220702_r1_processed.mat';
 %SessionName = 'S1/S1_20230327_r0_processed.mat';
-%SessionName = 'S3/S3_20230327_r0_processed.mat'; %%not sorted
+%SessionName = 'S3/S3_20230327_r0_processed.mat'; %%session is problematic
 %SessionName = 'S6/S6_20230710_r0_processed.mat';
-%SessionName ='S7/S7_20230608_r0_processed.mat';
-%SessionName ='S11/S11_20230801_r0_processed.mat';
-%SessionName ='S12/S12_20230731_r0_processed.mat';
+%SessionName = 'S7/S7_20230608_r0_processed.mat';
+%SessionName = 'S11/S11_20230801_r0_processed.mat';
+%SessionName = 'S12/S12_20230731_r0_processed.mat';
 
 %APC
-%SessionName ='Q3/Q3_20221019_r0_processed.mat'; %file corrupted
-%SessionName ='Q4/Q4_20221109_r0_processed.mat';
-%SessionName ='Q8/Q8_20221207_r0_processed.mat';
-%SessionName ='Q9/Q9_20221116_r0_processed.mat';
+%SessionName = 'Q3/Q3_20221019_r0_processed.mat'; %file corrupted
+%SessionName = 'Q4/Q4_20221109_r0_processed.mat';
+%SessionName = 'Q8/Q8_20221207_r0_processed.mat';
+%SessionName = 'Q9/Q9_20221116_r0_processed.mat';
 
 
 %% Path
@@ -31,6 +31,7 @@ MySession = fullfile(datapath,SessionName);
 %% Might need to change later
 handles.PlotSelectTrials.Value = 1;
 handles.SortReplay.Value = 1;
+
 %% get the processed data loaded
 
 [TracesOut, ColNames, handles.TrialInfo, handles.SingleUnits, TTLs, ...
@@ -101,16 +102,16 @@ if any(handles.Tuning.extras.sequence(:,1)==800) % pseudorandom tuning
         TrialAlignedSpikeTimes_Tuning(handles.SingleUnits,handles.Tuning.TTLs);
     
     % transition markers
-    odorTS(1,1) = sum(handles.Tuning.extras.sessionsettings(1,4)); % w.r.t. trial start (motor-settle, pre-odor)
+    odorTS(1,1) = handles.Tuning.extras.sessionsettings(1,4); % w.r.t. trial start (pre-odor)
     nLocations = size(handles.Tuning.extras.sequence,2) - 2;
     LocationShifts = 0; 
     for i = 1:nLocations
         if i == 1
-            LocationShifts(i,1) = -handles.Tuning.extras.sessionsettings(1,3);
-            LocationShifts(i,2) = sum(handles.Tuning.extras.sessionsettings(1,[4,5]));
+            LocationShifts(i,1) = -handles.Tuning.extras.sessionsettings(1,3); % w.r.t. trial start (settle)
+            LocationShifts(i,2) = sum(handles.Tuning.extras.sessionsettings(1,[4,5])); % w.r.t. trial start (pre + odor)
         else
             LocationShifts(i,1) = LocationShifts(i-1,2);
-            LocationShifts(i,2) = LocationShifts(i,1) + sum(handles.Tuning.extras.sessionsettings(1,[4,5]));
+            LocationShifts(i,2) = LocationShifts(i,1) + sum(handles.Tuning.extras.sessionsettings(1,[3,5])); % settle + odor
         end
     end
     odorTS(1,2) = LocationShifts(end,2);
@@ -119,11 +120,8 @@ if any(handles.Tuning.extras.sequence(:,1)==800) % pseudorandom tuning
 
 end
 
-
 %% Get FR aligned to perturbation start for all types of trials (CL, Halt, CL replay, Halt replay
 %And FR aligned to halt location for tuning
-
-
 
 for whichUnit = 1:Nb_unit
     for i = 1:numel(handles.OdorList)
@@ -208,7 +206,7 @@ for whichUnit = 1:Nb_unit
         AreaUnderCurve.PassiveHalt(:,whichUnit) = AreaUnderCurve.PassiveHalt(:,whichUnit)/(mywin/stepsize);
 
         end
-        %% add tuning trials - !!! THIS SEEMS TO GIVE STH THAT IS OFF
+        %% add tuning trials 
         if any(handles.Tuning.extras.sequence(:,1)==800) % pseudorandom tuning
             TuningAlignType = 1000 + haltlocation;
             LocationDuration = mode(diff(handles.TuningTiming.LocationShifts'));
@@ -374,7 +372,7 @@ for i = 1:Nb_unit
 end
 
 
-figure(2) % expected vs actual
+figure(2) % expected (based on location tuning curve vs actual 
 title('halt vs tuning curve response')
 haltlocation = 30;
 WhichBin = find(mean(XBins,2)==haltlocation);
@@ -387,25 +385,31 @@ set(gca,'XLim',[0 40],'YLim',[0 40])
 line([0 40],[0 40],'Color','k')
 
 
-%% PASSIVE AND TUNING ARE FIXED
+%% Comparison to passive halts
 if ~isempty(handles.ReplayAlignedSniffs)
 figure(3) %mean active perturbation response vs mean passive perturbation response
-title('halt vs passive halt response')
-for i = 1:Nb_unit
-    plot(mean(AreaUnderCurve.PassiveHalt([1 5 9],i)),mean(AreaUnderCurve.Halt([1 5 9],i)),...
-        'o', 'MarkerFaceColor', [0.7 0.7 0.7], 'MarkerEdgeColor', 'none');
-    set(gca,'XLim',[0 40],'YLim',[0 40])
-    line([0 40],[0 40],'Color','k')
-    hold on
-end
+title('active halt vs passive halt response')
+hold on; axis square
+plot(mean(AreaUnderCurve.PassiveHalt([1 5 9],:)),mean(AreaUnderCurve.Halt([1 5 9],:)),...
+    'o', 'MarkerFaceColor', [0.7 0.7 0.7], 'MarkerEdgeColor', 'none');
+set(gca,'XLim',[0 40],'YLim',[0 40])
+line([0 40],[0 40],'Color','k')
 end 
 
-figure(4) %mean perturbation response vs mean tuning response at same location
-title('halt vs passive tuning response')
-for i = 1:Nb_unit
-    plot(AreaUnderCurve.Tuning(i),mean(AreaUnderCurve.Halt([1 5 9],i)),...
-        'o', 'MarkerFaceColor', [0.7 0.7 0.7], 'MarkerEdgeColor', 'none');
-    set(gca,'XLim',[0 40],'YLim',[0 40])
-    line([0 40],[0 40],'Color','k')
-    hold on
-end
+figure(4) %mean perturbation response vs mean pseudorandom tuning response at same location
+title('halt vs pseudorandom tuning response')
+hold on; axis square
+plot(AreaUnderCurve.Tuning(:),mean(AreaUnderCurve.Halt([1 5 9],:),1),...
+    'o', 'MarkerFaceColor', [0.7 0.7 0.7], 'MarkerEdgeColor', 'none');
+set(gca,'XLim',[0 40],'YLim',[0 40])
+line([0 40],[0 40],'Color','k')
+
+
+%% Comparison between location tuning curve to pseudorandom tuning
+figure(5) %mean perturbation response vs mean tuning response at same location
+title('location tuning curve vs pseudorandom tuning response')
+
+plot(Expected,mean(AreaUnderCurve.Halt([1 5 9],:),1),...
+    'o', 'MarkerFaceColor', [0.7 0.7 0.7], 'MarkerEdgeColor', 'none');
+set(gca,'XLim',[0 40],'YLim',[0 40])
+line([0 40],[0 40],'Color','k')

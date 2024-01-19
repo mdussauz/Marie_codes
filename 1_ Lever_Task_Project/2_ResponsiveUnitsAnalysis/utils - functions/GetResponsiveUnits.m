@@ -22,7 +22,7 @@ function [responsive_units, resp_score] = GetResponsiveUnits(SessionName)
 %% %Settings to be changed depending on analysis performed
 
 % General parameters
-BaselineChoice = 'PreEvent'; %PreEvent vs ITI
+BaselineChoice = 'ITI'; %PreEvent vs ITI
 SortTrials =1; % !!! this is for perturbation and replay trials but once I incorporate those trials it should be deleted from analysis !!!
 TZsorted = 1; % to get PSTH average across each TZ type - !!! using all trials doesn't work !!!
 ActivityType = 'FR'; %'FR' or 'SpikeCount' - !!! SpikeCount doesn't work !!!
@@ -166,7 +166,7 @@ for odor = 1:3
     % TESTING - get bonus "event" activity - aligned to end of trial ~ animal has settled in TZ
     mean_tz_activity(:,odor) = round(squeeze(mean(baseline_activity(:,:,4), 1)));
 end
-    case 'ITI' %if we want to compare response to event to activty during ITI (or just before trial on)
+    case 'ITI' %if we want to compare response to event to activity during ITI (or just before trial on)
 for odor = 1:3
     % get average baseline activity just before Trial ON across trials
     % baseline_activity = trial x unit 
@@ -179,7 +179,7 @@ for odor = 1:3
 
     % TESTING - get bonus "event" activity - aligned to end of trial ~ animal has settled in TZ
     mean_tz_activity(:,odor) = squeeze(mean(...
-        AllAlignedActivity.(['odor',num2str(odor)])(:,:,4,baseline_window(1,1):baseline_window(1,2)),1,4,'omitnan')); 
+        AllAlignedActivity.(['odor',num2str(odor)])(:,:,4,baseline_window(1,1):baseline_window(1,2)),[1 4],'omitnan')); 
 
 end
 end

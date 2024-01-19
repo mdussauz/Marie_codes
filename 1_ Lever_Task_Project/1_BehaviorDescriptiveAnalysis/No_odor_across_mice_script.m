@@ -15,13 +15,15 @@ for session = 1:length(SessionName)
 SuccessRateNormal_all(session) = SuccessRateNormal;
 SuccessRatePerturb_all(session) = SuccessRatePerturb;
 
+if strcmp(SessionName{session}, 'S1/S1_20230312_r0.mat')
 CenteredLeverInTrialNormal_all = vertcat(CenteredLeverInTrialNormal_all,AllCenteredLeverInTrialNormal) ;
 CenteredLeverInTrialPerturb_all = vertcat(CenteredLeverInTrialPerturb_all, AllCenteredLeverInTrialPerturb);
+end
 
 end
 
 %% PLOTTING - TRYING TO CHARACTERIZE THE SPREAD OF LEVER DISTRIBUTION FOR BOTH CONDITIONS
-BinWidth = 0.6;
+BinWidth = 0.45;
 bins = -4.5:BinWidth:4.5;% Bin width of .6 allows to have entire tz for lever as one of the bins
 %TZCenterInd = find(BinCenters==0);
 BinCenters = (bins(1:end-1)+bins(2:end))/2;
