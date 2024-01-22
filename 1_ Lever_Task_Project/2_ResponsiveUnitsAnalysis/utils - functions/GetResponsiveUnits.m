@@ -22,7 +22,7 @@ function [responsive_units, resp_score] = GetResponsiveUnits(SessionName)
 %% %Settings to be changed depending on analysis performed
 
 % General parameters
-BaselineChoice = 'ITI'; %PreEvent vs ITI
+BaselineChoice = 'PreEvent'; %PreEvent vs ITI
 SortTrials =1; % !!! this is for perturbation and replay trials but once I incorporate those trials it should be deleted from analysis !!!
 TZsorted = 1; % to get PSTH average across each TZ type - !!! using all trials doesn't work !!!
 ActivityType = 'FR'; %'FR' or 'SpikeCount' - !!! SpikeCount doesn't work !!!

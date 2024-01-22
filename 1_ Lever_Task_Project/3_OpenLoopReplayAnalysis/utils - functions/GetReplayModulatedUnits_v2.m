@@ -144,7 +144,7 @@ comparisons = [3 1; 5 2]; % 3-1 = OL-OL vs OL-CL and 5-2 = PR-PR vs PR-CL
 
 for odor = 1:3
     for unit = 1:NbUnit
-        for x = 1:length(comparisons)
+        for x = 1:size(comparisons,1)
             % auROC and p-value for ranksum test
             ControlVar = PSTHResiduals{odor+1}(find(ResidualTags==U(comparisons(x,1))),unit); %(:,comparisons(x,1));
             TestedVar = PSTHResiduals{odor+1}(find(ResidualTags==U(comparisons(x,2))),unit); %(unit,:,comparisons(x,2));
@@ -168,7 +168,7 @@ comparisons = [3 1; 5 2]; % 3-1 = OL-OL vs OL-CL and 5-2 = PR-PR vs PR-CL
 
 for odor = 1:4
     for unit = 1:NbUnit
-        for x = 1:length(comparisons)
+        for x = 1:size(comparisons,1)
             temp_median_control = ResidualsMedian{odor}(unit,comparisons(x,1));
             temp_CI_control = ResidualsCI95{odor}(unit,comparisons(x,1));
 
@@ -201,7 +201,7 @@ end
 modulated_units   = NaN(NbUnit,2);
 
 for unit = 1:NbUnit
-    for condition = 1:2
+    for condition = 1:size(comparisons,1) %1) is AR vs 2) is PR
         if any(squeeze(modulation_score(:,unit,condition))==1, 'all')
             modulated_units(unit,condition) = 1;
         else

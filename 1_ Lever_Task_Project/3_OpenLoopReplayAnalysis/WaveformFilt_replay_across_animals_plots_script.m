@@ -1,20 +1,21 @@
 %Replay_across_animals_plots_script
 
+
 % Specifify which type of OL session
 %OL = "classic" ;
-OL = "free";
+OL = "classic";
 
 switch OL
     case "classic"
 % Classic open loop sessions
-% SessionName = {'O3/O3_20211005_r0_processed.mat',...
-% 'O8/O8_20220702_r0_processed.mat',...
-% 'O9/O9_20220630_r0_processed.mat',...
-% 'S1/S1_20230314_r0_processed.mat',...
-% 'S6/S6_20230727_r0_processed.mat',... 
-% 'S7/S7_20230707_r0_processed.mat',... 
-% 'S11/S11_20230812_r0_processed.mat',...
-% 'S12/S12_20230727_r0_processed.mat'};
+SessionName = {'O3/O3_20211005_r0_processed.mat',...
+'O8/O8_20220702_r0_processed.mat',...
+'O9/O9_20220630_r0_processed.mat',...
+'S1/S1_20230314_r0_processed.mat',...
+'S6/S6_20230727_r0_processed.mat',... 
+'S7/S7_20230707_r0_processed.mat',... 
+'S11/S11_20230812_r0_processed.mat',...
+'S12/S12_20230727_r0_processed.mat'};
 %% 'S3/S3_20230321_r0_processed.mat',... % this mouse is problematic in terms of rec quality so removed 
 
     case "free"
@@ -48,29 +49,16 @@ for session = 1:length(SessionName)
     perc_modulated_AR(session) = 100*Nb_mod_units_AR(session)/Nb_unit(session);
     perc_modulated_PR(session) = 100*Nb_mod_units_PR(session)/Nb_unit(session);
     
-    if session ==1
-        ResidualsMean = ThisResidualsMean;
-        ResidualsCI95 = ThisResidualsCI95;
-        ResidualsMedian = ThisResidualsMedian;
-    elseif session >1
-        ResidualsMean = cat(1,ResidualsMean, ThisResidualsMean);
-        ResidualsCI95 = cat(1,ResidualsCI95, ThisResidualsCI95);
-        ResidualsMedian = cat(1,ResidualsMedian, ThisResidualsMedian);
-    end
 
 end
 
 %% filtered by responsive units
 
-FiltResidualsMean = [];
-FiltResidualsCI95 = [];
-FiltResidualsMedian = [];
-
 for session = 1:length(SessionName)
     MouseName{session} = fileparts(SessionName{session});
 
-    [responsive_units, ~] = GetResponsiveUnits(SessionName {session});
-    whichunit = find(responsive_units~=0);
+    [WFcorrelation, concWFcorrelation, CorrelationCriteria, concCorrelationCriteria] = GetWaveformCorrelation (SessionName); 
+    whichunit = find(concWFcorrelation > concCorrelationCriteria)
 
     [FiltThismodulated_units, FiltThismodulation_score, FiltThisResidualsMean, ...
         FiltThisResidualsMedian, FiltThisResidualsCI95] = GetReplayModulatedUnits_v2(SessionName {session}, whichunit);
@@ -81,16 +69,6 @@ for session = 1:length(SessionName)
     
     Filtperc_modulated_AR(session) = 100*FiltNb_resp_units_AR(session)/FiltNb_unit(session);
     Filtperc_modulated_PR(session) = 100*FiltNb_resp_units_PR(session)/FiltNb_unit(session);
-
-    if session ==1
-        FiltResidualsMean = FiltThisResidualsMean;
-        FiltResidualsCI95 = FiltThisResidualsCI95;
-        FiltResidualsMedian = FiltThisResidualsMedian;
-    elseif session>1
-        FiltResidualsMean = cat(1,FiltResidualsMean, FiltThisResidualsMean);
-        FiltResidualsCI95 = cat(1,FiltResidualsCI95, FiltThisResidualsCI95);
-        FiltResidualsMedian = cat(1,FiltResidualsMedian, FiltThisResidualsMedian);
-    end
 
 end
 
@@ -119,7 +97,7 @@ boxchart(y, 'MarkerColor',"#A2142F", 'BoxWidth',0.4, 'BoxFaceColor','k');
 set(gca,'box','off','color','none','TickDir','out','XTickLabelRotation' ,45,'linewidth',2,...
     'fontname','calibri','fontsize',12)
 ylim([0 100])
-yticks(20:20:100)
+yticks(0:20:100)
 hold on
 plot(mean(y),'.','MarkerSize',12,'Color','k')
 hold off
@@ -133,7 +111,7 @@ y = [perc_modulated_PR]';
 b = bar(y);
 b.FaceColor = [0 0 0];
 ylim([0 100])
-yticks(20:20:100)
+yticks(0:20:100)
 set(gca,'box','off','color','none','TickDir','out','linewidth',2,...
     'fontname','calibri','fontsize',12,'XColor', 'none')
 

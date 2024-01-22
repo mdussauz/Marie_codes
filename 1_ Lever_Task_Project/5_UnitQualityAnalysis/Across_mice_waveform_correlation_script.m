@@ -1,4 +1,4 @@
-Across_mice_waveform_correlation_script
+%Across_mice_waveform_correlation_script
 
 %% Classic open loop sessions
 SessionName = {'O3/O3_20211005_r0_processed.mat',...

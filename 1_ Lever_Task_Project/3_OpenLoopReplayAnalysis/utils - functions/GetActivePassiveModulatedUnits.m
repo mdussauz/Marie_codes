@@ -1,9 +1,5 @@
-function [modulated_units,modulation_score, ResidualsMean, ResidualsMedian, ResidualsCI95] = ...
-    GetReplayModulatedUnits_v2(SessionName, whichunit, whichARrep, whichPRrep, SigTest)
-%version 2 
-% - this new version includes the option to pick which repeats to be
-%selected
-% - it also includes significance testing based on CI95
+function [modulated_units,modulation_score] = GetActivePassiveModulatedUnits(SessionName, whichunit, whichARrep, whichPRrep, SigTest)
+%function to compare active and passive 
 
 %INPUT: 
 % - SessionName = 'O3/O3_20211005_r0_processed.mat'
@@ -69,9 +65,7 @@ else
 end
 
 if strcmp(SessionName,'S12/S12_20230727_r0_processed.mat') 
-    if exist('whichARrep', 'var') &&  ~isempty(whichARrep)
-        whichrep = [1 whichARrep whichPRrep];
-    else
+    if ~exist('whichARrep', 'var') 
         reps_per_condition = [1 8 4];
     end 
 end 
@@ -142,11 +136,11 @@ switch SigTest
 % use CI95
 
 OdorPSTHResiduals = {PSTHResiduals{2:4}};
-comparisons = [3 1; 5 2]; % 3-1 = OL-OL vs OL-CL and 5-2 = PR-PR vs PR-CL
+comparisons = [3 4]; % 3-4 = OL-OL vs OL-PR 
 
 for odor = 1:3
     for unit = 1:NbUnit
-        for x = 1:length(comparisons)
+        for x = 1:size(comparisons,1)
             % auROC and p-value for ranksum test
             ControlVar = PSTHResiduals{odor+1}(find(ResidualTags==U(comparisons(x,1))),unit); %(:,comparisons(x,1));
             TestedVar = PSTHResiduals{odor+1}(find(ResidualTags==U(comparisons(x,2))),unit); %(unit,:,comparisons(x,2));
@@ -166,11 +160,11 @@ end
 
     case 'CI' % CI95 comparison
 OdorPSTHResiduals = {PSTHResiduals{2:4}};
-comparisons = [3 1; 5 2]; % 3-1 = OL-OL vs OL-CL and 5-2 = PR-PR vs PR-CL
+comparisons = [3 4]; % 3-4 = OL-OL vs OL-PR 
 
 for odor = 1:4
     for unit = 1:NbUnit
-        for x = 1:length(comparisons)
+        for x = 1:size(comparisons,1)
             temp_median_control = ResidualsMedian{odor}(unit,comparisons(x,1));
             temp_CI_control = ResidualsCI95{odor}(unit,comparisons(x,1));
 
@@ -203,11 +197,12 @@ end
 modulated_units   = NaN(NbUnit,2);
 
 for unit = 1:NbUnit
-    for condition = 1:2
+    for condition = 1:size(comparisons,1)
         if any(squeeze(modulation_score(:,unit,condition))==1, 'all')
             modulated_units(unit,condition) = 1;
         else
             modulated_units(unit,condition) = 0;
         end
     end
+end
 end

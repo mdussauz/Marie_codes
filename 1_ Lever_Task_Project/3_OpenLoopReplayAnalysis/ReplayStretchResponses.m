@@ -2,7 +2,8 @@
 %Script
 
 %% paths
-SessionName = fullfile('S12','S12_20230727_r0_processed.mat');
+%SessionName = fullfile('S12','S12_20230727_r0_processed.mat');
+SessionName = fullfile('O3','O3_20211005_r0_processed.mat');
 ChosenUnits = [];
 
 if strcmp(computer, 'MACI64')

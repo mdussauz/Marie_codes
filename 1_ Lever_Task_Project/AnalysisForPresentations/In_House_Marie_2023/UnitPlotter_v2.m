@@ -8,6 +8,7 @@ TZ = abs(whichTZ);
 thisUnitSpikes = AlignedSpikes(:,whichUnit);
 
 whichTrials = intersect(find(TrialInfo.Odor==whichodor),find(TrialInfo.TargetZoneType==TZ));
+
 if ~perturbed
     whichTrials = intersect(whichTrials, ...
         find(cellfun(@isempty, TrialInfo.Perturbation)));

@@ -229,7 +229,6 @@ for whichUnit = 1:Nb_unit
 end
 
 
-
 %% COMPARE MEAN PERTURBATION RESPONSE TO MIRROR ODOR LOCATION
 
 for i = 1:Nb_unit

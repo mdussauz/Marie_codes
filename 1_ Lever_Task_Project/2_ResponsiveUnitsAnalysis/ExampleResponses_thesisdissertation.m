@@ -8,10 +8,20 @@
 % for S6
 SessionPath = 'S6/S6_20230710_r0_processed.mat';
 % Trial ON (1), odor ON (2), Trial OFF (3), Reward (4), Halt Start (6)
-AlignTo = [2 2 2]; 
-ChosenUnits = [1 32 88];
-whichOdor = 1;
+AlignTo = [1 1 1 1 1 1];
+ChosenUnits = [1 88 32 83 82 30];
+whichOdor = 3;
 FRmax = [0 30];
+LocationTrialStart = -100;
+TZ = 1;
+
+% 1/87 = trial one
+% 88 = excited by all odors
+% 83 = excited by odor 2 and 3
+% 38/82 = excited by odor 3
+% 24/32 = trial one
+% 30 = odor 1
+
 
 %% DataExtraction
 if strcmp(computer, 'MACI64')
@@ -33,18 +43,6 @@ load(MySession, 'Traces', 'PassiveReplayTraces', 'TrialInfo', ...
 [AlignedSpikes, Events] = TrialAlignedSpikeTimes(SingleUnits,TTLs,...
     size(TrialInfo.TrialID,2),TrialInfo,MySession);
 
-%%
- 
-for tz = 1:12
-    whichTrials = intersect(find(cellfun(@isempty, TrialInfo.Perturbation(:,1))), ...
-                    find(TrialInfo.Odor==whichOdor));
-    whichTrials = intersect(whichTrials,...
-                    find(TrialInfo.TargetZoneType==tz));
-    OdorONPeriod(tz,1) = median(TrialInfo.OdorStart(whichTrials,1));
-    foo = cellfun(@(x) median(x(491:500)), Traces.Motor(whichTrials),'UniformOutput', false);
-    LocationTrialStart(tz,1) = round(median(cell2mat(foo)));
-end
-
 %% Plot
 nCols = numel(ChosenUnits);
 figure('Position',[0 0 1000 600]);
@@ -53,25 +51,27 @@ for x = 1:nCols
     
     switch AlignTo(x)
         case {1,2,6}
-            myXlim = [-1.2 5];
+            myXlim = [-1 5];
         case {3,4}
-            myXlim = [-5.2 1];
+            myXlim = [-5 1];
         case 5
-            myXlim = [-2.2 5];
+            myXlim = [-1.2 5];
     end
 
     trialsdone = 0;
-    for whichTZ = 1:4:12
-        trialboxcolor = GetLocationColor(LocationTrialStart(whichTZ));
+    for whichTZ = TZ
+        
+        %trialboxcolor = GetLocationColor(LocationTrialStart(whichTZ));
+        trialboxcolor = GetLocationColor(LocationTrialStart);
         
         % Spikes
         whichplots = x + [0 nCols];
         subplot(3,nCols,whichplots);
         hold on
         [nTrials, FRs, BinOffset] = ...
-            UnitPlotter(whichUnit, whichOdor, whichTZ, AlignedSpikes, Events, TrialInfo, AlignTo(x), trialsdone, trialboxcolor);
+            UnitPlotter_v2(whichUnit, whichOdor, whichTZ, AlignedSpikes, Events, TrialInfo, AlignTo(x), trialsdone, trialboxcolor);
         
-        set(gca, 'XLim', myXlim, 'TickDir', 'out');
+        set(gca, 'XLim', myXlim, 'YLim', [0 7], 'TickDir', 'out');
         
         % FR
         whichplots = x + 2*nCols;
@@ -79,7 +79,7 @@ for x = 1:nCols
         hold on
         plot((1:size(FRs,2))*0.002+BinOffset/1000,FRs(1,:),'color',trialboxcolor,'Linewidth',2);
 
-        set(gca, 'XLim', myXlim, 'YLim', FRmax, 'TickDir', 'out');
+        set(gca, 'XLim', myXlim, 'YLim', [0 max(FRs)+5], 'TickDir', 'out');
         
         trialsdone = trialsdone + nTrials;
     end    

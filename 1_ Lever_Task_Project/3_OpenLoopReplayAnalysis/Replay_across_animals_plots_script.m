@@ -2,8 +2,8 @@
 
 
 % Specifify which type of OL session
-%OL = "classic" ;
-OL = "free";
+OL = "classic" ;
+%OL = "free";
 
 switch OL
     case "classic"
