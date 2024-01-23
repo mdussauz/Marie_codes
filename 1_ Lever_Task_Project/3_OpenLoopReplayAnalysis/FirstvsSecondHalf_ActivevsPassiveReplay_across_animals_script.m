@@ -1,4 +1,5 @@
 %FirstvsSecondHalf_ActivevsPassiveReplay_across_animals_script
+% Comparing first half and second half of repeats of the active replay to passive replay
 
 % Classic open loop sessions
 SessionName = {'O3/O3_20211005_r0_processed.mat',...

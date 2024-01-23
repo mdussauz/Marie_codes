@@ -58,7 +58,7 @@ for unit = 1:Nb_Unit % for each cluster
     whichchannels = (floor(tetrode)*4) + [-3:1:0];
 
     %% Plots
-    figure(unit)
+    figure
     for chunk = 1:3
         whichspikes = intersect(find(wf.spikeTimeKeeps<=1500*chunk),find(wf.spikeTimeKeeps>=1500*(chunk-1)));
         for ch = 1:4

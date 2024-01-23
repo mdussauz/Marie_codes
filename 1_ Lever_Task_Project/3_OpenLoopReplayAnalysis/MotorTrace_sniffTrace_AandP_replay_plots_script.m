@@ -3,6 +3,10 @@
 
 %% paths 
 %classic open loop 
+SessionName = 'O3/O3_20211005_r0_processed.mat';
+% SessionName = 'O8/O8_20220702_r0_processed.mat';
+% SessionName = 'O9/O9_20220630_r0_processed.mat';
+
 %SessionName = 'S1/S1_20230314_r0_processed.mat';
 %SessionName = 'S3/S3_20230321_r0_processed.mat';
 %SessionName = 'S6/S6_20230727_r0_processed.mat';
@@ -11,7 +15,7 @@
 %SessionName = 'S12/S12_20230727_r0_processed.mat';
 
 %free lever open loop 
-SessionName = 'S1/S1_20230403_r0_processed.mat'; 
+%SessionName = 'S1/S1_20230403_r0_processed.mat'; 
 %SessionName = 'S6/S6_20230718_r0_processed.mat'; 
 %SessionName = 'S7/S7_20230622_r0_processed.mat';
 %SessionName = 'S11/S11_20230805_r0_processed.mat';
@@ -137,8 +141,10 @@ for i = 1:NumPassiveReplays
     if length(PassiveReplayTraces.Lever{1, i}) < length(OpenLoop.TemplateTraces.Lever{1,1})
         y_cutoff = length(PassiveReplayTraces.Lever{1, i});
         TemplateLeverTrace = OpenLoop.TemplateTraces.Lever{1,1}(1:y_cutoff);
+        ThisPassiveReplayLeverTrace = PassiveReplayTraces.Lever{1, i};
     elseif length(PassiveReplayTraces.Lever{1, i}) > length(OpenLoop.TemplateTraces.Lever{1,1})
         y_cutoff = length(PassiveReplayTraces.Lever{1, i});
+        TemplateLeverTrace = OpenLoop.TemplateTraces.Lever{1,1};
         ThisPassiveReplayLeverTrace = PassiveReplayTraces.Lever{1, i}(1:y_cutoff);
     else
         TemplateLeverTrace = OpenLoop.TemplateTraces.Lever{1,1}(:);
@@ -148,7 +154,7 @@ for i = 1:NumPassiveReplays
 TemplateTrace = fillmissing(TemplateLeverTrace,'nearest');
 distanceTemplate = sum(abs(diff(TemplateTrace)));
 coor_passivetrace(i) = corr(TemplateTrace,ThisPassiveReplayLeverTrace);
-var_passivetrace(i) = var(ThisPassiveReplayLeverTrace;
+var_passivetrace(i) = var(ThisPassiveReplayLeverTrace);
 residuals_passivetrace(i) = mean((TemplateTrace - ThisPassiveReplayLeverTrace).^2)';
 distance_PassiveReplays(i) = sum(abs(diff(ThisPassiveReplayLeverTrace)));
 
@@ -156,7 +162,20 @@ end
 
 
 
- 
+ %% Plot distance travelled with lever
+distance = [distanceTemplate distance_ActiveReplays];
+
+% rescaling distance travelled between 0 and 1 
+minVal = min(distance);
+maxVal = max(distance);
+norm_data = (distance - minVal) / ( maxVal - minVal );
+your_original_data = minVal + norm_data.*(maxVal - minVal); % just for sanity check
+
+plot(norm_data, 'k-o')
+xticks(2:2:10)
+yticks(0:0.5:1)
+set(gca,'box','off','color','none','TickDir','out','linewidth',2,...
+    'fontname','calibri','fontsize',12)
 
 
 
